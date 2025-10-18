@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-
 class TripPlannerPage extends StatefulWidget {
-  const TripPlannerPage({Key? key}) : super(key: key);
+  const TripPlannerPage({super.key});
 
   @override
   State<TripPlannerPage> createState() => _TripPlannerPageState();
@@ -14,7 +13,8 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     {
       "title": "Grand Baie Trip",
       "dateRange": "20 Dec - 31 Dec 2025",
-      "imageUrl": "https://images.unsplash.com/photo-1501117716987-c8e1ecb2101f",
+      "imageUrl":
+          "https://images.unsplash.com/photo-1501117716987-c8e1ecb2101f",
     },
   ];
 
@@ -44,10 +44,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
         backgroundColor: Colors.white,
         title: const Text(
           'Trip Planner',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           Padding(
@@ -79,7 +76,6 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
       ),
 
       // ✅ Include the Bottom Navigation Bar
-
     );
   }
 }
@@ -87,7 +83,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
 // ✅ Card widget for each trip
 class TripCard extends StatelessWidget {
   final Map<String, dynamic> trip;
-  const TripCard({Key? key, required this.trip}) : super(key: key);
+  const TripCard({super.key, required this.trip});
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +142,7 @@ class TripCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

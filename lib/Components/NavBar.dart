@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import '/Pages/home_page.dart';
 import '/Pages/trip_planner_page.dart';
 
-
 class BottomNav extends StatefulWidget {
-  const BottomNav({Key? key}) : super(key: key);
+  const BottomNav({super.key});
 
   @override
   State<BottomNav> createState() => _BottomNavState();
@@ -49,7 +48,10 @@ class _BottomNavState extends State<BottomNav> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Trip Plan'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'My profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'My profile',
+          ),
         ],
       ),
     );
