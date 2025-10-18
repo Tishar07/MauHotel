@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mauhotel/Pages/hotel_details_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -29,7 +30,7 @@ class HomePage extends StatelessWidget {
         'imageUrl': 'https://example.com/image2.jpg',
       },
       {
-        'name': 'Sofitel Mauritius L’Imperial',
+        'name': 'Sofitel Mauritius LImperial',
         'rating': 4.0,
         'reviews': 1500,
         'description': 'Set in Northern Mauritius overlooking the ...',
@@ -91,7 +92,8 @@ class HomePage extends StatelessWidget {
                 const SizedBox(width: 10),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // TODO: Implement sort functionality
+                    //TODO
+
                   },
                   icon: const Icon(Icons.sort),
                   label: const Text("Sort By"),
@@ -208,7 +210,12 @@ class HomePage extends StatelessWidget {
                             alignment: Alignment.centerRight,
                             child: ElevatedButton(
                               onPressed: () {
-                                // TODO: Navigate to hotel details
+                                  Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => HotelDetailsPage(), // Navigate to detail page
+                                  ),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue.shade800,
