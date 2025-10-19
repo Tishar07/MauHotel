@@ -33,11 +33,11 @@ class Hotel {
           ? json['offers'][0]['name'] ?? ''
           : '',
       price: json['rate_per_night']?['lowest']?.toString() ?? 'N/A',
-      imageUrl: (json['images'] != null &&
+      imageUrl:
+          (json['images'] != null &&
               json['images'] is List &&
               json['images'].isNotEmpty)
-          ? json['images'][0]['thumbnail'] ??
-              'https://via.placeholder.com/150'
+          ? json['images'][0]['thumbnail'] ?? 'https://via.placeholder.com/150'
           : 'https://via.placeholder.com/150',
     );
   }
@@ -81,9 +81,9 @@ class _HomePageState extends State<HomePage> {
       setState(() => _hotels = fetched);
     } catch (e) {
       debugPrint('Error fetching hotels: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error fetching hotels')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error fetching hotels')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -137,8 +137,9 @@ class _HomePageState extends State<HomePage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final results = data['properties'] as List? ?? [];
-      final List<Hotel> fetched =
-          results.map((json) => Hotel.fromJson(json)).toList();
+      final List<Hotel> fetched = results
+          .map((json) => Hotel.fromJson(json))
+          .toList();
 
       // Local sort fallback for price_high_to_low
       if (sortBy == 'price_high_to_low') {
@@ -249,10 +250,13 @@ class _HomePageState extends State<HomePage> {
                     DropdownMenuItem(value: 'pool', child: Text('Pool')),
                     DropdownMenuItem(value: 'spa', child: Text('Spa')),
                     DropdownMenuItem(
-                        value: 'parking', child: Text('Free Parking')),
+                      value: 'parking',
+                      child: Text('Free Parking'),
+                    ),
                     DropdownMenuItem(
-                        value: 'breakfast',
-                        child: Text('Breakfast Included')),
+                      value: 'breakfast',
+                      child: Text('Breakfast Included'),
+                    ),
                   ],
                   onChanged: (val) => amenity = val,
                 ),
@@ -381,8 +385,7 @@ class _HomePageState extends State<HomePage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                         child: Image.network(
                                           hotel.imageUrl,
                                           height: 100,
@@ -391,11 +394,13 @@ class _HomePageState extends State<HomePage> {
                                           errorBuilder:
                                               (context, error, stackTrace) =>
                                                   Container(
-                                            height: 100,
-                                            width: 100,
-                                            color: Colors.grey,
-                                            child: const Icon(Icons.image),
-                                          ),
+                                                    height: 100,
+                                                    width: 100,
+                                                    color: Colors.grey,
+                                                    child: const Icon(
+                                                      Icons.image,
+                                                    ),
+                                                  ),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -407,25 +412,30 @@ class _HomePageState extends State<HomePage> {
                                             Text(
                                               hotel.name,
                                               style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight:
-                                                      FontWeight.bold),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                             const SizedBox(height: 4),
                                             Row(
                                               children: [
-                                                const Icon(Icons.star,
-                                                    color: Colors.orange,
-                                                    size: 16),
-                                                Text('${hotel.rating}/5',
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
+                                                const Icon(
+                                                  Icons.star,
+                                                  color: Colors.orange,
+                                                  size: 16,
+                                                ),
+                                                Text(
+                                                  '${hotel.rating}/5',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   'Reviews (${hotel.reviews})',
                                                   style: const TextStyle(
-                                                      color: Colors.grey),
+                                                    color: Colors.grey,
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -441,18 +451,17 @@ class _HomePageState extends State<HomePage> {
                                                 Text(
                                                   hotel.offer,
                                                   style: const TextStyle(
-                                                      color: Colors.red,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                    color: Colors.red,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Text(
                                                   hotel.price,
                                                   style: TextStyle(
-                                                      color:
-                                                          Colors.blue.shade800,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                    color: Colors.blue.shade800,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -467,13 +476,13 @@ class _HomePageState extends State<HomePage> {
                                             backgroundColor:
                                                 Colors.blue.shade800,
                                             shape: const CircleBorder(),
-                                            padding:
-                                                const EdgeInsets.all(12),
+                                            padding: const EdgeInsets.all(12),
                                           ),
-                                          child:
-                                              const Icon(Icons.arrow_forward),
+                                          child: const Icon(
+                                            Icons.arrow_forward,
+                                          ),
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
