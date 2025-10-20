@@ -71,7 +71,7 @@ class RegisterPage extends StatelessWidget {
             builder: (context) => AlertDialog(
               title: const Text('Registration Successful'),
               content: const Text(
-                  'Your account has been created. Please check your email to confirm your registration.'),
+                  'Your account has been created.'),
               actions: [
                 TextButton(
                   onPressed: () {

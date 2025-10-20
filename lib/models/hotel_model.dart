@@ -1,31 +1,57 @@
 class Hotel {
+  final int hotelId;
   final String name;
-  final String imageUrl;
-  final double rating;
-  final int reviews;
+  final String location;
+  final String type;
   final String description;
-  final String offer;
-  final String price;
+  final double pricePerNight;
+  final String currency;
+  final String category;
+  final String imageUrl;
+  final List<String> amenities;
+  final String availableFrom;
+  final String availableTo;
+  final int roomsAvailable;
+  final double ratingAvg;
 
   Hotel({
+    required this.hotelId,
     required this.name,
-    required this.imageUrl,
-    required this.rating,
-    required this.reviews,
+    required this.location,
+    required this.type,
     required this.description,
-    required this.offer,
-    required this.price,
+    required this.pricePerNight,
+    required this.currency,
+    required this.category,
+    required this.imageUrl,
+    required this.amenities,
+    required this.availableFrom,
+    required this.availableTo,
+    required this.roomsAvailable,
+    required this.ratingAvg,
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
     return Hotel(
-      name: json['name'] ?? 'No name',
-      imageUrl: json['thumbnail'] ?? '', // or json['image_url']
-      rating: (json['rating'] ?? 0).toDouble(),
-      reviews: json['reviews'] ?? 0,
-      description: json['description'] ?? 'No description',
-      offer: json['offer'] ?? 'No offer',
-      price: json['price'] ?? 'No price',
+      hotelId: json['hotel_id'],
+      name: json['name'] ?? 'Unknown Hotel',
+      location: json['location'] ?? '',
+      type: json['type'] ?? '',
+      description: json['description'] ?? '',
+      pricePerNight: (json['price_per_night'] is num)
+          ? json['price_per_night'].toDouble()
+          : 0.0,
+      currency: json['currency'] ?? 'MUR',
+      category: json['category'] ?? '',
+      imageUrl: json['image_url'] ??
+          'https://via.placeholder.com/150',
+      amenities: (json['amenities'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      availableFrom: json['available_from'] ?? '',
+      availableTo: json['available_to'] ?? '',
+      roomsAvailable: json['rooms_available'] ?? 0,
+      ratingAvg: (json['rating_avg'] is num)
+          ? json['rating_avg'].toDouble()
+          : 0.0,
     );
   }
 }
