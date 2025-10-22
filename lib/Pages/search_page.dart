@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
-import 'hotel_details_page.dart';
+import 'hotel_details_page.dart'; // updated import
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -13,6 +13,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final supabase = Supabase.instance.client;
   final TextEditingController searchController = TextEditingController();
+
   List<Hotel> hotels = [];
   List<Hotel> filteredHotels = [];
   bool isLoading = true;
@@ -24,35 +25,39 @@ class _SearchPageState extends State<SearchPage> {
     searchController.addListener(filterHotels);
   }
 
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> fetchHotels() async {
     try {
       final data = await supabase.from('hotels').select();
 
       if (data is List && data.isNotEmpty) {
-        final hotelList = data
-            .map<Hotel>(
-              (hotel) => Hotel(
-                hotelId: hotel['hotel_id'], // Required field
-                name: hotel['name'] ?? 'Unnamed Hotel',
-                location: hotel['location'] ?? 'Unknown Location',
-                type: hotel['type'] ?? 'General',
-                description: hotel['description'] ?? 'No description available',
-                pricePerNight: (hotel['price_per_night'] ?? 0).toDouble(),
-                currency: hotel['currency'] ?? 'Rs',
-                category: hotel['category'] ?? 'General',
-                imageUrl: hotel['image_url'] ?? '',
-                amenities:
-                    (hotel['amenities'] as List?)
-                        ?.map((e) => e.toString())
-                        .toList() ??
-                    [],
-                availableFrom: hotel['available_from'] ?? '',
-                availableTo: hotel['available_to'] ?? '',
-                roomsAvailable: hotel['rooms_available'] ?? 0,
-                ratingAvg: (hotel['rating_avg'] ?? 0).toDouble(),
-              ),
-            )
-            .toList();
+        final hotelList = data.map<Hotel>((hotel) {
+          return Hotel(
+            hotelId: hotel['hotel_id'],
+            name: hotel['name'] ?? 'Unnamed Hotel',
+            location: hotel['location'] ?? 'Unknown Location',
+            type: hotel['type'] ?? 'General',
+            description: hotel['description'] ?? 'No description available',
+            pricePerNight: (hotel['price_per_night'] ?? 0).toDouble(),
+            currency: hotel['currency'] ?? 'Rs',
+            category: hotel['category'] ?? 'General',
+            imageUrl: hotel['image_url'] ?? '',
+            amenities:
+                (hotel['amenities'] as List?)
+                    ?.map((e) => e.toString())
+                    .toList() ??
+                [],
+            availableFrom: hotel['available_from'] ?? '',
+            availableTo: hotel['available_to'] ?? '',
+            roomsAvailable: hotel['rooms_available'] ?? 0,
+            ratingAvg: (hotel['rating_avg'] ?? 0).toDouble(),
+          );
+        }).toList();
 
         setState(() {
           hotels = hotelList;
@@ -87,22 +92,14 @@ class _SearchPageState extends State<SearchPage> {
   void filterHotels() {
     final query = searchController.text.toLowerCase().trim();
     setState(() {
-      if (query.isEmpty) {
-        filteredHotels = hotels;
-      } else {
-        filteredHotels = hotels.where((hotel) {
-          return hotel.name.toLowerCase().contains(query) ||
-              hotel.location.toLowerCase().contains(query) ||
-              hotel.category.toLowerCase().contains(query);
-        }).toList();
-      }
+      filteredHotels = query.isEmpty
+          ? hotels
+          : hotels.where((hotel) {
+              return hotel.name.toLowerCase().contains(query) ||
+                  hotel.location.toLowerCase().contains(query) ||
+                  hotel.category.toLowerCase().contains(query);
+            }).toList();
     });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -125,9 +122,7 @@ class _SearchPageState extends State<SearchPage> {
                 suffixIcon: searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          searchController.clear();
-                        },
+                        onPressed: () => searchController.clear(),
                       )
                     : null,
                 border: OutlineInputBorder(
@@ -256,6 +251,7 @@ class _SearchPageState extends State<SearchPage> {
                                       ),
                                       ElevatedButton(
                                         onPressed: () {
+                                          // Pass the full Hotel object
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
