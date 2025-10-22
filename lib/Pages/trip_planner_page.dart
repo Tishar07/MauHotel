@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/hotel_model.dart';
 
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({super.key});
@@ -10,7 +11,7 @@ class TripPlannerPage extends StatefulWidget {
 
 class _TripPlannerPageState extends State<TripPlannerPage> {
   final supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> hotels = [];
+  List<Hotel> hotels = [];
   bool isLoading = true;
 
   @override
@@ -19,27 +20,17 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     fetchHotelsFromSupabase();
   }
 
-  // ✅ FETCH HOTELS FROM SUPABASE (clean & safe)
+  // ✅ Fetch hotels safely
   Future<void> fetchHotelsFromSupabase() async {
     setState(() => isLoading = true);
     try {
       final response = await supabase
           .from('hotels')
-          .select('hotel_id, name, image_url'); // pick only what you need
+          .select('*'); // fetch all fields
 
       if (response is List && response.isNotEmpty) {
         setState(() {
-          hotels = response
-              .map<Map<String, dynamic>>(
-                (hotel) => {
-                  "id": hotel['hotel_id'] ?? 0,
-                  "name": hotel['name'] ?? 'Unnamed Hotel',
-                  "imageUrl":
-                      hotel['image_url'] ??
-                      'https://via.placeholder.com/300x180?text=No+Image',
-                },
-              )
-              .toList();
+          hotels = response.map((json) => Hotel.fromJson(json)).toList();
           isLoading = false;
         });
       } else {
@@ -61,12 +52,12 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
   }
 
   // 🔹 Ask user for days
-  Future<void> showDayInputDialog(Map<String, dynamic> hotel) async {
+  Future<void> showDayInputDialog(Hotel hotel) async {
     final controller = TextEditingController();
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Plan Trip for ${hotel['name']}"),
+        title: Text("Plan Trip for ${hotel.name}"),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
@@ -93,20 +84,20 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
   }
 
   // 🔹 Generate and save trip itinerary
-  Future<void> generateItinerary(Map<String, dynamic> hotel, int days) async {
+  Future<void> generateItinerary(Hotel hotel, int days) async {
     final itinerary = List.generate(
       days,
       (i) => {
         "day": "Day ${i + 1}",
-        "activity": "Explore local attractions near ${hotel['name']}",
+        "activity": "Explore local attractions near ${hotel.name}",
       },
     );
 
     final trip = {
-      "title": "${hotel['name']} Trip",
+      "title": "${hotel.name} Trip",
       "date_range": "Flexible",
-      "image_url": hotel['imageUrl'],
-      "hotel_name": hotel['name'],
+      "image_url": hotel.imageUrl,
+      "hotel_name": hotel.name,
       "itinerary": itinerary,
     };
 
@@ -154,7 +145,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                           top: Radius.circular(12),
                         ),
                         child: Image.network(
-                          hotel['imageUrl'] ?? '',
+                          hotel.imageUrl,
                           height: 180,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -173,7 +164,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              hotel['name'],
+                              hotel.name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
