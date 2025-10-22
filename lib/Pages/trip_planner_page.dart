@@ -19,33 +19,48 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     fetchHotelsFromSupabase();
   }
 
+  // ✅ FETCH HOTELS FROM SUPABASE (clean & safe)
   Future<void> fetchHotelsFromSupabase() async {
+    setState(() => isLoading = true);
     try {
-      final data = await supabase.from('hotels').select();
+      final response = await supabase
+          .from('hotels')
+          .select('hotel_id, name, image_url'); // pick only what you need
 
-      if (data != null && data is List) {
+      if (response is List && response.isNotEmpty) {
         setState(() {
-          hotels = data
+          hotels = response
               .map<Map<String, dynamic>>(
                 (hotel) => {
-                  "id": hotel['id'],
-                  "name": hotel['name'],
-                  "imageUrl": hotel['image_url'],
+                  "id": hotel['hotel_id'] ?? 0,
+                  "name": hotel['name'] ?? 'Unnamed Hotel',
+                  "imageUrl":
+                      hotel['image_url'] ??
+                      'https://via.placeholder.com/300x180?text=No+Image',
                 },
               )
               .toList();
           isLoading = false;
         });
+      } else {
+        setState(() {
+          hotels = [];
+          isLoading = false;
+        });
       }
-    } catch (e) {
-      print('❌ Error fetching hotels: $e');
+    } catch (e, st) {
+      debugPrint('❌ Error fetching hotels: $e\n$st');
       setState(() {
         hotels = [];
         isLoading = false;
       });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error fetching hotels.")));
     }
   }
 
+  // 🔹 Ask user for days
   Future<void> showDayInputDialog(Map<String, dynamic> hotel) async {
     final controller = TextEditingController();
     await showDialog(
@@ -77,6 +92,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     );
   }
 
+  // 🔹 Generate and save trip itinerary
   Future<void> generateItinerary(Map<String, dynamic> hotel, int days) async {
     final itinerary = List.generate(
       days,
@@ -95,24 +111,19 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     };
 
     try {
-      await supabase.from('trips').insert({
-        "title": trip['title'],
-        "date_range": trip['date_range'],
-        "image_url": trip['image_url'],
-        "hotel_name": trip['hotel_name'],
-        "itinerary": itinerary,
-      });
+      await supabase.from('trips').insert(trip);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Trip created successfully!")),
       );
-    } catch (e) {
-      print("❌ Error saving trip: $e");
+    } catch (e, st) {
+      debugPrint("❌ Error saving trip: $e\n$st");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Failed to create trip.")));
     }
   }
 
+  // ---------------- UI ----------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
