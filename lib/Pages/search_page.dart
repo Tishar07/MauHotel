@@ -21,25 +21,25 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     fetchHotels();
-    searchController.addListener(() => filterHotels());
+    searchController.addListener(filterHotels);
   }
 
   Future<void> fetchHotels() async {
     try {
       final data = await supabase.from('hotels').select();
 
-      if (data != null && data is List) {
+      if (data is List && data.isNotEmpty) {
         final hotelList = data
             .map<Hotel>(
               (hotel) => Hotel(
                 id: hotel['id'],
-                name: hotel['name'],
-                imageUrl: hotel['image_url'],
-                description: hotel['description'],
-                rating: hotel['rating']?.toDouble() ?? 0.0,
+                name: hotel['name'] ?? 'Unnamed Hotel',
+                imageUrl: hotel['image_url'] ?? '',
+                description: hotel['description'] ?? 'No description available',
+                rating: (hotel['rating'] ?? 0).toDouble(),
                 reviews: hotel['reviews'] ?? 0,
                 discount: hotel['discount'] ?? 0,
-                pricePerNight: hotel['price']?.toDouble() ?? 0.0,
+                pricePerNight: (hotel['price'] ?? 0).toDouble(),
                 currency: 'Rs',
               ),
             )
@@ -50,6 +50,12 @@ class _SearchPageState extends State<SearchPage> {
           filteredHotels = hotelList;
           isLoading = false;
         });
+      } else {
+        setState(() {
+          hotels = [];
+          filteredHotels = [];
+          isLoading = false;
+        });
       }
     } catch (e) {
       print("❌ Error fetching hotels: $e");
@@ -58,15 +64,29 @@ class _SearchPageState extends State<SearchPage> {
         filteredHotels = [];
         isLoading = false;
       });
+
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load hotels. Please try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
   void filterHotels() {
-    final query = searchController.text.toLowerCase();
+    final query = searchController.text.toLowerCase().trim();
     setState(() {
-      filteredHotels = hotels.where((hotel) {
-        return hotel.name.toLowerCase().contains(query);
-      }).toList();
+      if (query.isEmpty) {
+        filteredHotels = hotels;
+      } else {
+        filteredHotels = hotels.where((hotel) {
+          return hotel.name.toLowerCase().contains(query);
+        }).toList();
+      }
     });
   }
 
@@ -79,7 +99,11 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Search Hotels')),
+      appBar: AppBar(
+        title: const Text('Search Hotels'),
+        backgroundColor: Colors.blue[900],
+        foregroundColor: Colors.white,
+      ),
       body: Column(
         children: [
           Padding(
@@ -89,9 +113,19 @@ class _SearchPageState extends State<SearchPage> {
               decoration: InputDecoration(
                 hintText: "Search by hotel name...",
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          searchController.clear();
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                filled: true,
+                fillColor: Colors.grey[100],
               ),
             ),
           ),
@@ -99,14 +133,40 @@ class _SearchPageState extends State<SearchPage> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredHotels.isEmpty
-                ? const Center(child: Text("No hotels found."))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          searchController.text.isEmpty
+                              ? "No hotels available."
+                              : "No hotels found matching '${searchController.text}'",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
                 : ListView.builder(
                     itemCount: filteredHotels.length,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemBuilder: (_, index) {
+                    itemBuilder: (context, index) {
                       final hotel = filteredHotels[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -119,13 +179,18 @@ class _SearchPageState extends State<SearchPage> {
                                 height: 180,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  height: 180,
-                                  color: Colors.grey[300],
-                                  child: const Center(
-                                    child: Icon(Icons.broken_image),
-                                  ),
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      height: 180,
+                                      color: Colors.grey[300],
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
                               ),
                             ),
                             Padding(
@@ -140,37 +205,95 @@ class _SearchPageState extends State<SearchPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Rating: ${hotel.rating}/5 (${hotel.reviews} reviews)",
-                                  ),
-                                  Text("Discount: ${hotel.discount}% OFF"),
-                                  Text(
-                                    "Price: ${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(2)} per night",
-                                  ),
                                   const SizedBox(height: 8),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                HotelDetailsPage(hotel: hotel),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "${hotel.rating_avg}/5",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Text(
+                                        " (${hotel.reviews} reviews)",
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  if (hotel.discount > 0)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red[100],
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        "${hotel.discount}% OFF",
+                                        style: TextStyle(
+                                          color: Colors.red[900],
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  HotelDetailsPage(
+                                                    hotel: hotel,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue[900],
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue[900],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            20,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "View Details",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
-                                      child: const Text("View"),
-                                    ),
+                                    ],
                                   ),
                                 ],
                               ),
