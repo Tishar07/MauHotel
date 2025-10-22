@@ -52,7 +52,7 @@ class _HotelViewPageState extends State<HotelViewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(hotel.name, style: Theme.of(context).textTheme.headline6),
+                Text(hotel.name, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Row(
                   children: [
