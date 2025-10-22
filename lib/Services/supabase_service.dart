@@ -60,4 +60,20 @@ class SupabaseService {
       return [];
     }
   }
+  Future<Hotel> getHotelById(String id) async {
+  try {
+    final response = await _client
+        .from('hotels')
+        .select()
+        .eq('id', id)
+        .single();
+
+    return Hotel.fromJson(response);
+  } catch (e) {
+    print('Error fetching hotel by ID: $e');
+    throw Exception('Hotel not found');
+  }
+ }
 }
+
+
