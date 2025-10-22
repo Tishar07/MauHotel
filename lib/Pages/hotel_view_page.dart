@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart'; // 
-import '../models/hotel_model.dart';     // your hotel model
+import '../services/supabase_service.dart'; //
+import '../models/hotel_model.dart'; // your hotel model
 
 class HotelViewPage extends StatefulWidget {
   final String hotelId;
@@ -17,7 +17,9 @@ class _HotelViewPageState extends State<HotelViewPage> {
   @override
   void initState() {
     super.initState();
-    hotelFuture = SupabaseService().getHotelById(widget.hotelId); // adjust method name
+    hotelFuture = SupabaseService().getHotelById(
+      widget.hotelId,
+    ); // adjust method name
   }
 
   @override
@@ -65,14 +67,19 @@ class _HotelViewPageState extends State<HotelViewPage> {
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,
-                  children: hotel.amenities.map((a) => Chip(label: Text(a))).toList(),
+                  children: hotel.amenities
+                      .map((a) => Chip(label: Text(a)))
+                      .toList(),
                 ),
                 const SizedBox(height: 16),
-                Text('Rs ${hotel.pricePerNight}', style: TextStyle(fontSize: 20)),
+                Text(
+                  'Rs ${hotel.pricePerNight}',
+                  style: TextStyle(fontSize: 20),
+                ),
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
-                    // add booking logic 
+                    // add booking logic
                   },
                   child: const Text('Book Now'),
                 ),
@@ -84,5 +91,3 @@ class _HotelViewPageState extends State<HotelViewPage> {
     );
   }
 }
-
-
