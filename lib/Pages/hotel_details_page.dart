@@ -4,7 +4,10 @@ import '../models/hotel_model.dart';
 class HotelDetailsPage extends StatelessWidget {
   final Hotel hotel; // <-- add this
 
-  const HotelDetailsPage({super.key, required this.hotel}); // <-- named parameter
+  const HotelDetailsPage({
+    super.key,
+    required this.hotel,
+  }); // <-- named parameter
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +27,7 @@ class HotelDetailsPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               hotel.name,
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(

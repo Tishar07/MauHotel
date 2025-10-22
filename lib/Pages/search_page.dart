@@ -32,15 +32,24 @@ class _SearchPageState extends State<SearchPage> {
         final hotelList = data
             .map<Hotel>(
               (hotel) => Hotel(
-                id: hotel['id'],
+                hotelId: hotel['hotel_id'], // Required field
                 name: hotel['name'] ?? 'Unnamed Hotel',
-                imageUrl: hotel['image_url'] ?? '',
+                location: hotel['location'] ?? 'Unknown Location',
+                type: hotel['type'] ?? 'General',
                 description: hotel['description'] ?? 'No description available',
-                rating: (hotel['rating'] ?? 0).toDouble(),
-                reviews: hotel['reviews'] ?? 0,
-                discount: hotel['discount'] ?? 0,
-                pricePerNight: (hotel['price'] ?? 0).toDouble(),
-                currency: 'Rs',
+                pricePerNight: (hotel['price_per_night'] ?? 0).toDouble(),
+                currency: hotel['currency'] ?? 'Rs',
+                category: hotel['category'] ?? 'General',
+                imageUrl: hotel['image_url'] ?? '',
+                amenities:
+                    (hotel['amenities'] as List?)
+                        ?.map((e) => e.toString())
+                        .toList() ??
+                    [],
+                availableFrom: hotel['available_from'] ?? '',
+                availableTo: hotel['available_to'] ?? '',
+                roomsAvailable: hotel['rooms_available'] ?? 0,
+                ratingAvg: (hotel['rating_avg'] ?? 0).toDouble(),
               ),
             )
             .toList();
@@ -64,8 +73,6 @@ class _SearchPageState extends State<SearchPage> {
         filteredHotels = [];
         isLoading = false;
       });
-
-      // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -84,7 +91,9 @@ class _SearchPageState extends State<SearchPage> {
         filteredHotels = hotels;
       } else {
         filteredHotels = hotels.where((hotel) {
-          return hotel.name.toLowerCase().contains(query);
+          return hotel.name.toLowerCase().contains(query) ||
+              hotel.location.toLowerCase().contains(query) ||
+              hotel.category.toLowerCase().contains(query);
         }).toList();
       }
     });
@@ -111,7 +120,7 @@ class _SearchPageState extends State<SearchPage> {
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
-                hintText: "Search by hotel name...",
+                hintText: "Search by hotel name, location, or category...",
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: searchController.text.isNotEmpty
                     ? IconButton(
@@ -205,6 +214,11 @@ class _SearchPageState extends State<SearchPage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "${hotel.location} • ${hotel.type} • ${hotel.category}",
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
@@ -215,39 +229,18 @@ class _SearchPageState extends State<SearchPage> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        "${hotel.rating_avg}/5",
+                                        "${hotel.ratingAvg}/5",
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      Text(
-                                        " (${hotel.reviews} reviews)",
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
                                         ),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 4),
-                                  if (hotel.discount > 0)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red[100],
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        "${hotel.discount}% OFF",
-                                        style: TextStyle(
-                                          color: Colors.red[900],
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
+                                  Text(
+                                    "Available rooms: ${hotel.roomsAvailable}",
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
                                   const SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment:
