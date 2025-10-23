@@ -65,7 +65,7 @@ class SupabaseService {
     final response = await _client
         .from('hotels')
         .select()
-        .eq('id', id)
+        .eq('hotel_id', id)
         .single();
 
     return Hotel.fromJson(response);

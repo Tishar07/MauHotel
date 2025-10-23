@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'hotel_details_page.dart';
+import 'hotel_view_page.dart'; 
+
 
 // --------------------- MODEL ---------------------
 class Hotel {
@@ -367,6 +369,12 @@ class _HomePageState extends State<HomePage> {
                       const Spacer(),
                       ElevatedButton.icon(
                         onPressed: () {
+                          Navigator.push(
+                           context,
+                           MaterialPageRoute(
+                             builder: (context) => HotelViewPage(hotelId: hotel.id.toString()),
+                           ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue.shade800,
