@@ -20,14 +20,10 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     fetchHotelsFromSupabase();
   }
 
-  // ✅ Fetch hotels safely
   Future<void> fetchHotelsFromSupabase() async {
     setState(() => isLoading = true);
     try {
-      final response = await supabase
-          .from('hotels')
-          .select('*'); // fetch all fields
-
+      final response = await supabase.from('hotels').select('*');
       if (response is List && response.isNotEmpty) {
         setState(() {
           hotels = response.map((json) => Hotel.fromJson(json)).toList();
@@ -51,7 +47,6 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     }
   }
 
-  // 🔹 Ask user for days
   Future<void> showDayInputDialog(Hotel hotel) async {
     final controller = TextEditingController();
     await showDialog(
@@ -83,7 +78,6 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     );
   }
 
-  // 🔹 Generate and save trip itinerary
   Future<void> generateItinerary(Hotel hotel, int days) async {
     final itinerary = List.generate(
       days,
@@ -114,18 +108,20 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     }
   }
 
-  // ---------------- UI ----------------
   @override
   Widget build(BuildContext context) {
+    const lightBlue = Color(0xFFE8F3FF);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Trip Planner",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
+      backgroundColor: Colors.white,
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hotels.isEmpty
@@ -135,59 +131,76 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
               itemCount: hotels.length,
               itemBuilder: (_, index) {
                 final hotel = hotels[index];
-                return Card(
+                return Container(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12),
-                        ),
-                        child: Image.network(
-                          hotel.imageUrl,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 180,
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: Icon(Icons.broken_image),
+                  decoration: BoxDecoration(
+                    color: lightBlue,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            hotel.imageUrl,
+                            width: 100,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 100,
+                              height: 80,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.broken_image),
                             ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              hotel.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hotel.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Center(
-                              child: ElevatedButton.icon(
-                                onPressed: () => showDayInputDialog(hotel),
-                                icon: const Icon(Icons.add),
-                                label: const Text("Plan Trip"),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue[900],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
+                              const SizedBox(height: 6),
+                              Text(
+                                hotel.description ??
+                                    "No description available.",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => showDayInputDialog(hotel),
+                                  icon: const Icon(Icons.add, size: 16),
+                                  label: const Text("Plan Trip"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue[800],
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 8,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
