@@ -19,7 +19,7 @@ class _BottomNavState extends State<BottomNav> {
     HomePage(),
     TripPlannerPage(),
     SearchPage(),
-    AccountPage(),
+    EditProfilePage(),
   ];
 
   void _onItemTapped(int index) {

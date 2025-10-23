@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'hotel_details_page.dart';
-import 'hotel_view_page.dart'; 
+import 'hotel_view_page.dart';
 
 
-// --------------------- MODEL ---------------------
 class Hotel {
   final int id;
   final String name;
@@ -43,7 +41,7 @@ class Hotel {
   }
 }
 
-// --------------------- PAGE ---------------------
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -54,9 +52,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final supabase = Supabase.instance.client;
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = false;
 
+  bool _isLoading = false;
   List<Hotel> _hotels = [];
+
   String? _selectedSort;
   Map<String, String> _selectedFilters = {};
 
@@ -89,7 +88,7 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      debugPrint('❌ Error fetching user: $e');
+      debugPrint('Error fetching user: $e');
     }
   }
 
@@ -98,32 +97,40 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = true);
 
     try {
-      final query = supabase.from('hotels').select();
+      dynamic query = supabase.from('hotels').select();
 
       final category = _selectedFilters['category'];
       final amenity = _selectedFilters['amenity'];
+      final search = _searchController.text.trim();
 
-      // Apply filters
+      // Category filter (text)
       if (category != null && category.isNotEmpty) {
-        query.eq('category', category);
+        query = query.eq('category', category);
       }
+
+      // Amenity filter (array column)
       if (amenity != null && amenity.isNotEmpty) {
-        query.contains('amenities', [amenity]);
+        query = query.contains('amenities', [amenity]);
+      }
+
+      // Search by hotel name
+      if (search.isNotEmpty) {
+        query = query.ilike('name', '%$search%');
       }
 
       // Sorting
       switch (_selectedSort) {
         case 'price_low_to_high':
-          query.order('price_per_night', ascending: true);
+          query = query.order('price_per_night', ascending: true);
           break;
         case 'price_high_to_low':
-          query.order('price_per_night', ascending: false);
+          query = query.order('price_per_night', ascending: false);
           break;
         case 'rating_high_to_low':
-          query.order('rating_avg', ascending: false);
+          query = query.order('rating_avg', ascending: false);
           break;
         case 'rating_low_to_high':
-          query.order('rating_avg', ascending: true);
+          query = query.order('rating_avg', ascending: true);
           break;
       }
 
@@ -132,13 +139,16 @@ class _HomePageState extends State<HomePage> {
 
       setState(() => _hotels = hotels);
     } catch (e, st) {
-      debugPrint('❌ Fetch error: $e\n$st');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Error fetching hotels')));
+      debugPrint('Fetch error: $e\n$st');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error fetching hotels')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
   }
+
+
 
   // --------------------- SORT DIALOG ---------------------
   void _showSortDialog() async {
@@ -160,13 +170,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  SimpleDialogOption _sortOption(String title, String value) =>
-      SimpleDialogOption(
+  SimpleDialogOption _sortOption(String title, String value) => SimpleDialogOption(
         child: Text(title),
         onPressed: () => Navigator.pop(context, value),
       );
 
-  // --------------------- FILTER DIALOG ---------------------
+
   void _showFilterDialog() async {
     String? category;
     String? amenity;
@@ -249,9 +258,9 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
               TextField(
                 controller: _searchController,
-                onSubmitted: (val) => _fetchHotels(),
+                onSubmitted: (_) => _fetchHotels(),
                 decoration: InputDecoration(
-                  hintText: 'Hotels...',
+                  hintText: 'Search hotels...',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: Colors.blue.shade50,
@@ -397,7 +406,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --------------------- IMAGE LOADER ---------------------
+
   Widget _buildHotelImage(String url) {
     final isNetwork = url.startsWith('http') || url.startsWith('https');
     return ClipRRect(
