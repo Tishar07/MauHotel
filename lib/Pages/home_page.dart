@@ -1,44 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'hotel_view_page.dart';
-
-class Hotel {
-  final int id;
-  final String name;
-  final String description;
-  final double pricePerNight;
-  final String currency;
-  final String category;
-  final String imageUrl;
-  final double rating;
-  final int reviews;
-
-  Hotel({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.pricePerNight,
-    required this.currency,
-    required this.category,
-    required this.imageUrl,
-    this.rating = 0,
-    this.reviews = 0,
-  });
-
-  factory Hotel.fromJson(Map<String, dynamic> json) {
-    return Hotel(
-      id: json['hotel_id'] ?? 0,
-      name: json['name'] ?? 'Unknown Hotel',
-      description: json['description'] ?? '',
-      pricePerNight: (json['price_per_night'] ?? 0).toDouble(),
-      currency: json['currency'] ?? 'MUR',
-      category: json['category'] ?? '',
-      imageUrl: json['image_url'] ?? 'assets/Hotel_images/placeholder.jpg',
-      rating: (json['rating_avg'] ?? 0).toDouble(),
-      reviews: json['reviews'] ?? 0,
-    );
-  }
-}
+import '../models/hotel_model.dart';
+import 'hotel_details_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -56,7 +19,6 @@ class _HomePageState extends State<HomePage> {
 
   String? _selectedSort;
   Map<String, String> _selectedFilters = {};
-
   String? _firstName;
   String? _lastName;
 
@@ -85,14 +47,12 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      debugPrint('Error fetching user: $e');
+      debugPrint('Error fetching user name: $e');
     }
   }
 
-  /// 🔍 Fetch Hotels with Search, Filter, and Sort
   Future<void> _fetchHotels() async {
     setState(() => _isLoading = true);
-
     try {
       dynamic query = supabase.from('hotels').select();
 
@@ -100,7 +60,7 @@ class _HomePageState extends State<HomePage> {
       final amenity = _selectedFilters['amenity'];
       final search = _searchController.text.trim();
 
-      // 🧩 Apply Filters
+      // Apply filters
       if (category != null && category.isNotEmpty) {
         query = query.eq('category', category);
       }
@@ -109,12 +69,11 @@ class _HomePageState extends State<HomePage> {
         query = query.contains('amenities', [amenity]);
       }
 
-      // 🔍 Apply Search
       if (search.isNotEmpty) {
         query = query.ilike('name', '%$search%');
       }
 
-      // 🔢 Apply Sort
+      // Sorting options
       switch (_selectedSort) {
         case 'price_low_to_high':
           query = query.order('price_per_night', ascending: true);
@@ -135,10 +94,10 @@ class _HomePageState extends State<HomePage> {
 
       setState(() => _hotels = hotels);
     } catch (e, st) {
-      debugPrint('Fetch error: $e\n$st');
+      debugPrint('Error fetching hotels: $e\n$st');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Error fetching hotels')));
+      ).showSnackBar(const SnackBar(content: Text('Failed to fetch hotels')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -157,6 +116,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+
     if (result != null) {
       setState(() => _selectedSort = result);
       _fetchHotels();
@@ -184,15 +144,12 @@ class _HomePageState extends State<HomePage> {
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: const [
                   DropdownMenuItem(value: 'Luxury', child: Text('Luxury')),
-                  DropdownMenuItem(
-                    value: 'Budget-Friendly',
-                    child: Text('Budget-Friendly'),
-                  ),
+                  DropdownMenuItem(value: 'Budget', child: Text('Budget')),
+                  DropdownMenuItem(value: 'Resort', child: Text('Resort')),
                   DropdownMenuItem(
                     value: 'Adventure',
                     child: Text('Adventure'),
                   ),
-                  DropdownMenuItem(value: 'Resort', child: Text('Resort')),
                 ],
                 onChanged: (v) => category = v,
               ),
@@ -238,82 +195,91 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userGreeting = _firstName != null
+    final greeting = _firstName != null
         ? 'Welcome to MauHotel,\n$_firstName $_lastName!'
         : 'Welcome to MauHotel!';
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                userGreeting,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _searchController,
-                onSubmitted: (_) => _fetchHotels(),
-                decoration: InputDecoration(
-                  hintText: 'Search hotels...',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.blue.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
+        child: RefreshIndicator(
+          onRefresh: _fetchHotels,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _showFilterDialog,
-                    icon: const Icon(Icons.filter_list),
-                    label: const Text('Filter By'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade800,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _searchController,
+                  onSubmitted: (_) => _fetchHotels(),
+                  decoration: InputDecoration(
+                    hintText: 'Search hotels...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.blue.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton.icon(
-                    onPressed: _showSortDialog,
-                    icon: const Icon(Icons.sort),
-                    label: const Text('Sort By'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade800,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _showFilterDialog,
+                      icon: const Icon(Icons.filter_list),
+                      label: const Text('Filter By'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade800,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _isLoading
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      onPressed: _showSortDialog,
+                      icon: const Icon(Icons.sort),
+                      label: const Text('Sort By'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade800,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _hotels.isEmpty
-                    ? const Center(child: Text('No hotels found'))
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 80),
+                          child: Text('No hotels found'),
+                        ),
+                      )
                     : ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
                         itemCount: _hotels.length,
                         itemBuilder: (_, i) => _buildHotelCard(_hotels[i]),
                       ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -330,7 +296,7 @@ class _HomePageState extends State<HomePage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHotelImage(hotel.imageUrl, height: 140, width: 140),
+            _buildHotelImage(hotel.imageUrl),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -348,12 +314,12 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       const Icon(Icons.star, color: Colors.orange, size: 18),
                       Text(
-                        '${hotel.rating.toStringAsFixed(1)}/5',
+                        '${hotel.ratingAvg.toStringAsFixed(1)}/5',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '(${hotel.reviews} reviews)',
+                        hotel.location,
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
@@ -382,25 +348,15 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  HotelViewPage(hotelId: hotel.id.toString()),
+                              builder: (_) => HotelDetailsPage(hotel: hotel),
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromRGBO(
-                            21,
-                            101,
-                            192,
-                            1,
-                          ),
+                          backgroundColor: Colors.blue.shade800,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
                           ),
                         ),
                         icon: const Icon(Icons.arrow_forward, size: 18),
@@ -417,36 +373,35 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHotelImage(
-    String url, {
-    double height = 120,
-    double width = 120,
-  }) {
-    final isNetwork = url.startsWith('http') || url.startsWith('https');
+  Widget _buildHotelImage(String url) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
-      child: isNetwork
+      child: url.startsWith('http')
           ? Image.network(
               url,
-              height: height,
-              width: width,
+              height: 140,
+              width: 140,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _imagePlaceholder(height, width),
+              errorBuilder: (_, __, ___) =>
+                  _placeholderImage(height: 140, width: 140),
             )
           : Image.asset(
               url,
-              height: height,
-              width: width,
+              height: 140,
+              width: 140,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _imagePlaceholder(height, width),
+              errorBuilder: (_, __, ___) =>
+                  _placeholderImage(height: 140, width: 140),
             ),
     );
   }
 
-  Widget _imagePlaceholder(double height, double width) => Container(
-    height: height,
-    width: width,
-    color: const Color.fromARGB(255, 255, 255, 255),
-    child: const Icon(Icons.broken_image, color: Colors.grey),
-  );
+  Widget _placeholderImage({required double height, required double width}) {
+    return Container(
+      height: height,
+      width: width,
+      color: Colors.white,
+      child: const Icon(Icons.broken_image, color: Colors.grey),
+    );
+  }
 }
