@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
+import 'itinerary_page.dart';
 
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({super.key});
@@ -17,46 +18,40 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
   @override
   void initState() {
     super.initState();
-    fetchHotelsFromSupabase();
+    fetchHotels();
   }
 
-  Future<void> fetchHotelsFromSupabase() async {
+  Future<void> fetchHotels() async {
     setState(() => isLoading = true);
     try {
       final response = await supabase.from('hotels').select('*');
       if (response is List && response.isNotEmpty) {
-        setState(() {
-          hotels = response.map((json) => Hotel.fromJson(json)).toList();
-          isLoading = false;
-        });
+        hotels = response.map((json) => Hotel.fromJson(json)).toList();
       } else {
-        setState(() {
-          hotels = [];
-          isLoading = false;
-        });
+        hotels = [];
       }
     } catch (e, st) {
-      debugPrint('❌ Error fetching hotels: $e\n$st');
-      setState(() {
-        hotels = [];
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Error fetching hotels.")));
+      debugPrint('Error fetching hotels: $e\n$st');
+      hotels = [];
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
-  Future<void> showDayInputDialog(Hotel hotel) async {
+  Future<void> showDaysDialog(Hotel hotel) async {
     final controller = TextEditingController();
+
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Plan Trip for ${hotel.name}"),
+        title: Text("Enter number of days for ${hotel.name}"),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: "Enter number of days"),
+          decoration: const InputDecoration(
+            labelText: "Number of days",
+            hintText: "e.g., 3",
+          ),
         ),
         actions: [
           TextButton(
@@ -69,6 +64,10 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
               if (days != null && days > 0) {
                 Navigator.pop(context);
                 generateItinerary(hotel, days);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Enter a valid number")),
+                );
               }
             },
             child: const Text("Generate"),
@@ -78,34 +77,23 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
     );
   }
 
-  Future<void> generateItinerary(Hotel hotel, int days) async {
+  void generateItinerary(Hotel hotel, int days) {
+    // Generate dynamic itinerary
     final itinerary = List.generate(
       days,
       (i) => {
         "day": "Day ${i + 1}",
-        "activity": "Explore local attractions near ${hotel.name}",
+        "morning": "Breakfast and morning walk near ${hotel.name}",
+        "afternoon": "Explore local attractions around ${hotel.location}",
       },
     );
 
-    final trip = {
-      "title": "${hotel.name} Trip",
-      "date_range": "Flexible",
-      "image_url": hotel.imageUrl,
-      "hotel_name": hotel.name,
-      "itinerary": itinerary,
-    };
-
-    try {
-      await supabase.from('trips').insert(trip);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Trip created successfully!")),
-      );
-    } catch (e, st) {
-      debugPrint("❌ Error saving trip: $e\n$st");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Failed to create trip.")));
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ItineraryPage(hotel: hotel, itinerary: itinerary),
+      ),
+    );
   }
 
   @override
@@ -120,6 +108,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       backgroundColor: Colors.white,
       body: isLoading
@@ -179,10 +168,8 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                               const SizedBox(height: 8),
                               Align(
                                 alignment: Alignment.centerRight,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => showDayInputDialog(hotel),
-                                  icon: const Icon(Icons.add, size: 16),
-                                  label: const Text("Plan Trip"),
+                                child: ElevatedButton(
+                                  onPressed: () => showDaysDialog(hotel),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue[800],
                                     foregroundColor: Colors.white,
@@ -194,6 +181,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                                       vertical: 8,
                                     ),
                                   ),
+                                  child: const Text("Plan Trip"),
                                 ),
                               ),
                             ],
