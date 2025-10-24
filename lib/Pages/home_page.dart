@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'hotel_view_page.dart';
 
-
 class Hotel {
   final int id;
   final String name;
@@ -41,7 +40,6 @@ class Hotel {
   }
 }
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -69,7 +67,6 @@ class _HomePageState extends State<HomePage> {
     _fetchHotels();
   }
 
-  // --------------------- FETCH USER ---------------------
   Future<void> _fetchUserName() async {
     try {
       final user = supabase.auth.currentUser;
@@ -92,7 +89,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // --------------------- FETCH HOTELS ---------------------
   Future<void> _fetchHotels() async {
     setState(() => _isLoading = true);
 
@@ -103,22 +99,18 @@ class _HomePageState extends State<HomePage> {
       final amenity = _selectedFilters['amenity'];
       final search = _searchController.text.trim();
 
-      // Category filter (text)
       if (category != null && category.isNotEmpty) {
         query = query.eq('category', category);
       }
 
-      // Amenity filter (array column)
       if (amenity != null && amenity.isNotEmpty) {
         query = query.contains('amenities', [amenity]);
       }
 
-      // Search by hotel name
       if (search.isNotEmpty) {
         query = query.ilike('name', '%$search%');
       }
 
-      // Sorting
       switch (_selectedSort) {
         case 'price_low_to_high':
           query = query.order('price_per_night', ascending: true);
@@ -140,17 +132,14 @@ class _HomePageState extends State<HomePage> {
       setState(() => _hotels = hotels);
     } catch (e, st) {
       debugPrint('Fetch error: $e\n$st');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error fetching hotels')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error fetching hotels')));
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-
-
-  // --------------------- SORT DIALOG ---------------------
   void _showSortDialog() async {
     final result = await showDialog<String>(
       context: context,
@@ -170,11 +159,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  SimpleDialogOption _sortOption(String title, String value) => SimpleDialogOption(
+  SimpleDialogOption _sortOption(String title, String value) =>
+      SimpleDialogOption(
         child: Text(title),
         onPressed: () => Navigator.pop(context, value),
       );
-
 
   void _showFilterDialog() async {
     String? category;
@@ -191,8 +180,14 @@ class _HomePageState extends State<HomePage> {
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: const [
                   DropdownMenuItem(value: 'Luxury', child: Text('Luxury')),
-                  DropdownMenuItem(value: 'Budget-Friendly', child: Text('Budget-Friendly')),
-                  DropdownMenuItem(value: 'Adventure', child: Text('Adventure')),
+                  DropdownMenuItem(
+                    value: 'Budget-Friendly',
+                    child: Text('Budget-Friendly'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Adventure',
+                    child: Text('Adventure'),
+                  ),
                   DropdownMenuItem(value: 'Resort', child: Text('Resort')),
                 ],
                 onChanged: (v) => category = v,
@@ -203,7 +198,10 @@ class _HomePageState extends State<HomePage> {
                   DropdownMenuItem(value: 'WiFi', child: Text('Wi-Fi')),
                   DropdownMenuItem(value: 'Pool', child: Text('Pool')),
                   DropdownMenuItem(value: 'Spa', child: Text('Spa')),
-                  DropdownMenuItem(value: 'Restaurant', child: Text('Restaurant')),
+                  DropdownMenuItem(
+                    value: 'Restaurant',
+                    child: Text('Restaurant'),
+                  ),
                 ],
                 onChanged: (v) => amenity = v,
               ),
@@ -212,8 +210,9 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context, {
@@ -233,7 +232,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // --------------------- UI BUILD ---------------------
   @override
   Widget build(BuildContext context) {
     final userGreeting = _firstName != null
@@ -305,12 +303,11 @@ class _HomePageState extends State<HomePage> {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _hotels.isEmpty
-                        ? const Center(child: Text('No hotels found'))
-                        : ListView.builder(
-                            itemCount: _hotels.length,
-                            itemBuilder: (_, i) =>
-                                _buildHotelCard(_hotels[i]),
-                          ),
+                    ? const Center(child: Text('No hotels found'))
+                    : ListView.builder(
+                        itemCount: _hotels.length,
+                        itemBuilder: (_, i) => _buildHotelCard(_hotels[i]),
+                      ),
               ),
             ],
           ),
@@ -319,20 +316,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --------------------- HOTEL CARD ---------------------
   Widget _buildHotelCard(Hotel hotel) {
     return Card(
       color: Colors.blue.shade50,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)),
-      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      margin: const EdgeInsets.only(bottom: 25),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(18),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHotelImage(hotel.imageUrl),
-            const SizedBox(width: 12),
+            _buildHotelImage(hotel.imageUrl, height: 140, width: 140),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,32 +335,33 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     hotel.name,
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.star,
-                          color: Colors.orange, size: 16),
+                      const Icon(Icons.star, color: Colors.orange, size: 18),
                       Text(
                         '${hotel.rating.toStringAsFixed(1)}/5',
-                        style:
-                            const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Text(
                         'Reviews (${hotel.reviews})',
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     hotel.description,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Text(
@@ -373,26 +369,32 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(
                           color: Colors.blue.shade800,
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                       const Spacer(),
                       ElevatedButton.icon(
                         onPressed: () {
                           Navigator.push(
-                           context,
-                           MaterialPageRoute(
-                             builder: (context) => HotelViewPage(hotelId: hotel.id.toString()),
-                           ),
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  HotelViewPage(hotelId: hotel.id.toString()),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue.shade800,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
                         ),
-                        icon: const Icon(Icons.arrow_forward, size: 16),
+                        icon: const Icon(Icons.arrow_forward, size: 18),
                         label: const Text('View'),
                       ),
                     ],
@@ -406,33 +408,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-  Widget _buildHotelImage(String url) {
+  Widget _buildHotelImage(
+    String url, {
+    double height = 120,
+    double width = 120,
+  }) {
     final isNetwork = url.startsWith('http') || url.startsWith('https');
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(15),
       child: isNetwork
           ? Image.network(
               url,
-              height: 100,
-              width: 100,
+              height: height,
+              width: width,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _imagePlaceholder(),
+              errorBuilder: (_, __, ___) => _imagePlaceholder(height, width),
             )
           : Image.asset(
               url,
-              height: 100,
-              width: 100,
+              height: height,
+              width: width,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _imagePlaceholder(),
+              errorBuilder: (_, __, ___) => _imagePlaceholder(height, width),
             ),
     );
   }
 
-  Widget _imagePlaceholder() => Container(
-        height: 100,
-        width: 100,
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.broken_image, color: Colors.grey),
-      );
+  Widget _imagePlaceholder(double height, double width) => Container(
+    height: height,
+    width: width,
+    color: Colors.grey.shade200,
+    child: const Icon(Icons.broken_image, color: Colors.grey),
+  );
 }
