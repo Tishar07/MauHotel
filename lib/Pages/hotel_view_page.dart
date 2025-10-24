@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart'; //
 import '../models/hotel_model.dart'; // your hotel model
+import 'booking_page.dart';
+
 
 class HotelViewPage extends StatefulWidget {
   final String hotelId;
@@ -79,7 +81,12 @@ class _HotelViewPageState extends State<HotelViewPage> {
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
-                    // add booking logic
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                       builder: (context) => BookingPage(hotel: hotel),
+                        ),
+                   );
                   },
                   child: const Text('Book Now'),
                 ),
