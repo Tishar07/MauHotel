@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/hotel_model.dart';
+import 'Pay_Page.dart';
 
 
 class BookingPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _BookingPageState extends State<BookingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.hotel.name, style: Theme.of(context).textTheme.titleLarge),
+            Text(widget.hotel.name, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: const Color.fromARGB(255, 13, 32, 248))),
             const SizedBox(height: 16),
 
             // Rooms
@@ -75,17 +76,27 @@ class _BookingPageState extends State<BookingPage> {
             ),
 
             const SizedBox(height: 20),
-            Text('Total Price: Rs ${totalPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Total Price: Rs ${totalPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
 
             const Spacer(),
             ElevatedButton.icon(
               onPressed: () {
-                // TODO: Add payment logic
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PaymentPage(
+                      hotel: widget.hotel,
+                      rooms: rooms,
+                      nights: nights,
+                      bedType: bedType,
+                    ),
+                  ),
+                );
               },
               icon: const Icon(Icons.payment),
               label: const Text('Pay Now'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color.fromARGB(198, 240, 9, 9),
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(50),
               ),
@@ -95,4 +106,4 @@ class _BookingPageState extends State<BookingPage> {
       ),
     );
   }
-}
+} 
