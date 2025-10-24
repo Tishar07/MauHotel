@@ -44,10 +44,10 @@ class _BottomNavState extends State<BottomNav> {
         showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Trip Plan'),
+          BottomNavigationBarItem(icon: Icon(Icons.luggage), label: 'Trip Plan'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.account_circle_rounded),
             label: 'My Profile',
           ),
         ],

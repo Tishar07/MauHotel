@@ -56,6 +56,7 @@ class _HotelViewPageState extends State<HotelViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: FutureBuilder<Hotel>(
         future: hotelFuture,
         builder: (context, snapshot) {
@@ -81,7 +82,6 @@ class _HotelViewPageState extends State<HotelViewPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🏞️ Top image with overlay
               Stack(
                 children: [
                   Image.network(

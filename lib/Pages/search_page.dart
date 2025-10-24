@@ -210,6 +210,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Search Hotels'),
         actions: [
@@ -231,7 +232,7 @@ class _SearchPageState extends State<SearchPage> {
                 labelText: 'Destination',
                 prefixIcon: Icon(Icons.location_on),
                 filled: true,
-                fillColor: Color(0xFFF0F8FF),
+                fillColor: Color.fromARGB(255, 229, 229, 229),
               ),
             ),
             const SizedBox(height: 10),
@@ -286,7 +287,7 @@ class _SearchPageState extends State<SearchPage> {
               onPressed: _fetchHotels,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 25, 96, 177),
-                foregroundColor: Colors.white, // ✅ Makes the text white
+                foregroundColor: Colors.white, 
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text(
