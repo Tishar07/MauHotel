@@ -10,8 +10,8 @@ class Hotel {
   final String currency;
   final String category;
   final String imageUrl;
-  double rating; // now mutable so we can update after fetching reviews
-  int reviews;
+  final double rating;
+  final int reviews;
 
   Hotel({
     required this.id,
@@ -34,6 +34,8 @@ class Hotel {
       currency: json['currency'] ?? 'MUR',
       category: json['category'] ?? '',
       imageUrl: json['image_url'] ?? 'assets/Hotel_images/placeholder.jpg',
+      rating: (json['rating_avg'] ?? 0).toDouble(),
+      reviews: json['reviews'] ?? 0,
     );
   }
 }
@@ -87,6 +89,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  /// 🔍 Fetch Hotels with Search, Filter, and Sort
   Future<void> _fetchHotels() async {
     setState(() => _isLoading = true);
 
@@ -97,6 +100,7 @@ class _HomePageState extends State<HomePage> {
       final amenity = _selectedFilters['amenity'];
       final search = _searchController.text.trim();
 
+      // 🧩 Apply Filters
       if (category != null && category.isNotEmpty) {
         query = query.eq('category', category);
       }
@@ -105,11 +109,12 @@ class _HomePageState extends State<HomePage> {
         query = query.contains('amenities', [amenity]);
       }
 
+      // 🔍 Apply Search
       if (search.isNotEmpty) {
         query = query.ilike('name', '%$search%');
       }
 
-      // Sorting logic
+      // 🔢 Apply Sort
       switch (_selectedSort) {
         case 'price_low_to_high':
           query = query.order('price_per_night', ascending: true);
@@ -117,13 +122,16 @@ class _HomePageState extends State<HomePage> {
         case 'price_high_to_low':
           query = query.order('price_per_night', ascending: false);
           break;
+        case 'rating_high_to_low':
+          query = query.order('rating_avg', ascending: false);
+          break;
+        case 'rating_low_to_high':
+          query = query.order('rating_avg', ascending: true);
+          break;
       }
 
       final data = await query;
       final hotels = (data as List).map((e) => Hotel.fromJson(e)).toList();
-
-      // Now fetch review data for each hotel
-      await _fetchReviewsForHotels(hotels);
 
       setState(() => _hotels = hotels);
     } catch (e, st) {
@@ -136,39 +144,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _fetchReviewsForHotels(List<Hotel> hotels) async {
-    try {
-      final hotelIds = hotels.map((h) => h.id).toList();
-      final response = await supabase
-          .from('reviews')
-          .select('hotel_id, rating')
-          .inFilter('hotel_id', hotelIds);
-
-      final List<dynamic> reviewsData = response as List<dynamic>;
-
-      // Group and calculate average
-      for (final hotel in hotels) {
-        final hotelReviews = reviewsData
-            .where((r) => r['hotel_id'] == hotel.id)
-            .toList();
-
-        if (hotelReviews.isNotEmpty) {
-          final totalRating = hotelReviews
-              .map((r) => (r['rating'] ?? 0).toDouble())
-              .reduce((a, b) => a + b);
-          final avgRating = totalRating / hotelReviews.length;
-          hotel.rating = avgRating;
-          hotel.reviews = hotelReviews.length;
-        } else {
-          hotel.rating = 0;
-          hotel.reviews = 0;
-        }
-      }
-    } catch (e) {
-      debugPrint('Error fetching review data: $e');
-    }
-  }
-
   void _showSortDialog() async {
     final result = await showDialog<String>(
       context: context,
@@ -177,6 +152,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           _sortOption('Price: Low to High', 'price_low_to_high'),
           _sortOption('Price: High to Low', 'price_high_to_low'),
+          _sortOption('Rating: High to Low', 'rating_high_to_low'),
+          _sortOption('Rating: Low to High', 'rating_low_to_high'),
         ],
       ),
     );
