@@ -50,7 +50,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
             labelText: "Number of days",
-            hintText: "e.g., 3",
+            hintText: "e.g: 3",
           ),
         ),
         actions: [
@@ -140,7 +140,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                             errorBuilder: (_, __, ___) => Container(
                               width: 100,
                               height: 80,
-                              color: Colors.grey[300],
+                              color: const Color.fromARGB(255, 255, 255, 255),
                               child: const Icon(Icons.broken_image),
                             ),
                           ),
@@ -171,8 +171,18 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                                 child: ElevatedButton(
                                   onPressed: () => showDaysDialog(hotel),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue[800],
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: const Color.fromARGB(
+                                      255,
+                                      25,
+                                      96,
+                                      177,
+                                    ),
+                                    foregroundColor: const Color.fromARGB(
+                                      255,
+                                      255,
+                                      255,
+                                      255,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),

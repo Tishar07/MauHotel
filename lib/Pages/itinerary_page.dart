@@ -19,7 +19,7 @@ class ItineraryPage extends StatelessWidget {
           "Your Itinerary",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 1, 153, 255),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -38,7 +38,7 @@ class ItineraryPage extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   height: 220,
-                  color: Colors.grey[300],
+                  color: const Color.fromARGB(255, 52, 111, 238),
                   child: const Icon(Icons.broken_image, size: 60),
                 ),
               ),
@@ -66,7 +66,12 @@ class ItineraryPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: const Color.fromARGB(
+                        255,
+                        0,
+                        0,
+                        0,
+                      ).withOpacity(0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),

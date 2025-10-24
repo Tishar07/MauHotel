@@ -285,10 +285,14 @@ class _SearchPageState extends State<SearchPage> {
             ElevatedButton(
               onPressed: _fetchHotels,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 21, 92, 199),
+                backgroundColor: const Color.fromARGB(255, 25, 96, 177),
+                foregroundColor: Colors.white, // ✅ Makes the text white
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text('Search'),
+              child: const Text(
+                'Search',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 20),
 

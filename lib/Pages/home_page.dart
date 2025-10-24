@@ -411,7 +411,12 @@ class _HomePageState extends State<HomePage> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade800,
+                          backgroundColor: const Color.fromRGBO(
+                            21,
+                            101,
+                            192,
+                            1,
+                          ),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
@@ -464,7 +469,7 @@ class _HomePageState extends State<HomePage> {
   Widget _imagePlaceholder(double height, double width) => Container(
     height: height,
     width: width,
-    color: Colors.grey.shade200,
+    color: const Color.fromARGB(255, 255, 255, 255),
     child: const Icon(Icons.broken_image, color: Colors.grey),
   );
 }
