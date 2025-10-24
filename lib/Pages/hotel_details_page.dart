@@ -1,6 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math';
 import '../models/hotel_model.dart';
+
+// Review model
+class Review {
+  final int id;
+  final int hotelId;
+  final int rating;
+  final String comment;
+  final String reviewDate;
+  final String userId;
+
+  Review({
+    required this.id,
+    required this.hotelId,
+    required this.rating,
+    required this.comment,
+    required this.reviewDate,
+    required this.userId,
+  });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json['review_id'] as int,
+      hotelId: json['hotel_id'] as int,
+      rating: json['rating'] as int,
+      comment: json['comment'] ?? '',
+      reviewDate: json['review_date'] ?? '',
+      userId: json['user_id'] ?? '',
+    );
+  }
+}
 
 class HotelDetailsPage extends StatefulWidget {
   final Hotel hotel;
@@ -13,9 +44,46 @@ class HotelDetailsPage extends StatefulWidget {
 
 class _HotelDetailsPageState extends State<HotelDetailsPage> {
   bool isLoved = false;
+  final supabase = Supabase.instance.client;
+
+  List<Review> reviews = [];
+  bool isLoadingReviews = true;
 
   final int fakeReviewCount = 1000 + Random().nextInt(500);
-  final double fakeRating = (4.0 + Random().nextDouble()).clamp(4.0, 5.0);
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReviews();
+  }
+
+  Future<void> _fetchReviews() async {
+    try {
+      final response = await supabase
+          .from('reviews')
+          .select()
+          .eq('hotel_id', widget.hotel.hotelId)
+          .order('review_date', ascending: false);
+
+      setState(() {
+        reviews = (response as List)
+            .map((data) => Review.fromJson(data))
+            .toList();
+        isLoadingReviews = false;
+      });
+    } catch (e) {
+      print('Error loading reviews: $e');
+      setState(() {
+        isLoadingReviews = false;
+      });
+    }
+  }
+
+  double get averageRating {
+    if (reviews.isEmpty) return 0.0;
+    double sum = reviews.fold(0.0, (acc, r) => acc + r.rating);
+    return sum / reviews.length;
+  }
 
   IconData getAmenityIcon(String amenity) {
     switch (amenity.toLowerCase()) {
@@ -36,7 +104,7 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
       case 'butler services':
         return Icons.room_service;
       case 'rooftop bar':
-        return Icons.room_service;
+        return Icons.roofing;
       case 'restaurant':
         return Icons.restaurant;
       default:
@@ -55,7 +123,7 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Image with Blue Overlay and Action Buttons
+                // Header image with overlay and icons
                 Stack(
                   children: [
                     Image.network(
@@ -137,12 +205,12 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                           const Icon(
                             Icons.location_on,
                             size: 18,
-                            color: Color.fromARGB(255, 240, 0, 0),
+                            color: Colors.red,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             hotel.location,
-                            style: TextStyle(color: Colors.grey),
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),
@@ -151,7 +219,7 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Price & Book Now
+                // Price & Book Button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -165,11 +233,9 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      const Text(
                         'Total includes taxes & fees',
-                        style: TextStyle(
-                          color: const Color.fromARGB(255, 255, 0, 0),
-                        ),
+                        style: TextStyle(color: Colors.red),
                       ),
                       const SizedBox(height: 12),
                       ElevatedButton(
@@ -205,16 +271,15 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Amenities Logos (Horizontal Row with Symmetrical Spacing)
+                // Amenities
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Wrap(
-                    direction: Axis.horizontal,
-                    spacing: 32, // horizontal spacing between items
-                    runSpacing: 24, // vertical spacing if wrapped
+                    spacing: 32,
+                    runSpacing: 24,
                     children: hotel.amenities.map((amenity) {
                       return SizedBox(
-                        width: 100, // fixed width for symmetry
+                        width: 100,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -239,7 +304,7 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // About Hotel
+                // About section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -262,7 +327,7 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Ratings & Reviews
+                // Ratings & Reviews Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
@@ -282,114 +347,104 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.star, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${fakeRating.toStringAsFixed(1)} / 5.0',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+
+                        // If loading
+                        if (isLoadingReviews)
+                          const Center(child: CircularProgressIndicator()),
+
+                        // If no reviews
+                        if (!isLoadingReviews && reviews.isEmpty)
+                          const Text(
+                            'No reviews yet. Be the first to review this hotel!',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+
+                        // Average rating
+                        if (!isLoadingReviews && reviews.isNotEmpty)
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${averageRating.toStringAsFixed(1)} / 5.0',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '(${fakeReviewCount} reviews)',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '(${reviews.length} reviews)',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+
                         const SizedBox(height: 16),
 
-                        // Review 1
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const CircleAvatar(
-                              radius: 24,
-                              backgroundImage: NetworkImage(
-                                'https://i.pravatar.cc/150?img=3',
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
+                        // Review List
+                        if (!isLoadingReviews && reviews.isNotEmpty)
+                          ...reviews.map((review) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Alicia R.',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                  const CircleAvatar(
+                                    radius: 24,
+                                    backgroundImage: NetworkImage(
+                                      'https://i.pravatar.cc/150?img=7',
                                     ),
                                   ),
-                                  Row(
-                                    children: List.generate(5, (index) {
-                                      return const Icon(
-                                        Icons.star,
-                                        color: Colors.amber,
-                                        size: 18,
-                                      );
-                                    }),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'Absolutely loved the private pool and spa! The staff were incredibly attentive and the beach access made our mornings magical.',
-                                    style: TextStyle(fontSize: 14),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'User ${review.userId.substring(0, 6)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Row(
+                                          children: List.generate(5, (index) {
+                                            return Icon(
+                                              index < review.rating
+                                                  ? Icons.star
+                                                  : Icons.star_border,
+                                              color: Colors.amber,
+                                              size: 18,
+                                            );
+                                          }),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          review.comment,
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          review.reviewDate,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Review 2
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const CircleAvatar(
-                              radius: 24,
-                              backgroundImage: NetworkImage(
-                                'https://i.pravatar.cc/150?img=5',
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Dev M.',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: List.generate(4, (index) {
-                                      return const Icon(
-                                        Icons.star,
-                                        color: Colors.amber,
-                                        size: 18,
-                                      );
-                                    }),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'The yoga classes were a peaceful escape and the butler service was top-notch. Would definitely come back!',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                            );
+                          }).toList(),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Bottom Compare Button
+                // Compare Button
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
