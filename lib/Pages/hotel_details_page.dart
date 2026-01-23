@@ -1,38 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
+import '../models/review_model.dart';
 import 'booking_page.dart';
 import 'compare_hotels_page.dart';
-
-// Review model
-class Review {
-  final int id;
-  final int hotelId;
-  final int rating;
-  final String comment;
-  final String reviewDate;
-  final String userId;
-
-  Review({
-    required this.id,
-    required this.hotelId,
-    required this.rating,
-    required this.comment,
-    required this.reviewDate,
-    required this.userId,
-  });
-
-  factory Review.fromJson(Map<String, dynamic> json) {
-    return Review(
-      id: json['review_id'] as int,
-      hotelId: json['hotel_id'] as int,
-      rating: json['rating'] as int,
-      comment: json['comment'] ?? '',
-      reviewDate: json['review_date'] ?? '',
-      userId: json['user_id'] ?? '',
-    );
-  }
-}
 
 class HotelDetailsPage extends StatefulWidget {
   final Hotel hotel;
