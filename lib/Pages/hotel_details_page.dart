@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:math';
 import '../models/hotel_model.dart';
 import 'booking_page.dart';
+import 'compare_hotels_page.dart';
 
 // Review model
 class Review {
@@ -45,14 +45,18 @@ class HotelDetailsPage extends StatefulWidget {
 
 class _HotelDetailsPageState extends State<HotelDetailsPage> {
   final supabase = Supabase.instance.client;
+
   bool isLoved = false;
   bool isLoadingReviews = true;
+  bool isLoadingHotels = false;
   List<Review> reviews = [];
+  List<Hotel> allHotels = [];
 
   @override
   void initState() {
     super.initState();
     _fetchReviews();
+    _fetchAllHotels(); // fetch all hotels for comparison
   }
 
   Future<void> _fetchReviews() async {
@@ -71,9 +75,20 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
       });
     } catch (e) {
       print('Error loading reviews: $e');
-      setState(() {
-        isLoadingReviews = false;
-      });
+      setState(() => isLoadingReviews = false);
+    }
+  }
+
+  Future<void> _fetchAllHotels() async {
+    setState(() => isLoadingHotels = true);
+    try {
+      final response = await supabase.from('hotels').select();
+      final hotels = (response as List).map((e) => Hotel.fromJson(e)).toList();
+      setState(() => allHotels = hotels);
+    } catch (e) {
+      print('Error loading hotels: $e');
+    } finally {
+      setState(() => isLoadingHotels = false);
     }
   }
 
@@ -418,7 +433,16 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
             // Compare Button
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: isLoadingHotels
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CompareHotelsPage(baseHotel: hotel),
+                          ),
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 28, 114, 194),
                   foregroundColor: Colors.white,
