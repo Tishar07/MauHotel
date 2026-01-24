@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
 import 'hotel_details_page.dart';
+import '../theme/app_theme.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -292,8 +293,8 @@ class _SearchPageState extends State<SearchPage> {
             ElevatedButton(
               onPressed: _fetchHotels,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 25, 96, 177),
-                foregroundColor: Colors.white, 
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text(

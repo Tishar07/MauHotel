@@ -3,6 +3,7 @@ import '/Pages/home_page.dart';
 import '/Pages/trip_planner_page.dart';
 import '/Pages/search_page.dart';
 import '/Pages/account_page.dart';
+import '../theme/app_theme.dart';
 
 class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
@@ -38,13 +39,16 @@ class _BottomNavState extends State<BottomNav> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.blue[900],
+        backgroundColor: AppTheme.primaryBlue,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.luggage), label: 'Trip Plan'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.luggage),
+            label: 'Trip Plan',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle_rounded),

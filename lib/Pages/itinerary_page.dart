@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/hotel_model.dart';
+import '../models/dayplan_model.dart';
 
 class ItineraryPage extends StatelessWidget {
   final Hotel hotel;
-  final List<Map<String, dynamic>> itinerary;
+  final List<DayPlan> itinerary;
 
   const ItineraryPage({
     super.key,
@@ -29,6 +30,7 @@ class ItineraryPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Hotel Image
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
@@ -43,12 +45,17 @@ class ItineraryPage extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // Hotel Name
             Text(
               hotel.name,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
+            // Hotel Description
             Text(
               hotel.description ?? "No description available.",
               style: const TextStyle(fontSize: 15, color: Colors.black54),
@@ -57,6 +64,8 @@ class ItineraryPage extends StatelessWidget {
             const SizedBox(height: 24),
             const Divider(thickness: 2),
             const SizedBox(height: 12),
+
+            // Day Plans
             ...itinerary.map((dayPlan) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -66,12 +75,7 @@ class ItineraryPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color.fromARGB(
-                        255,
-                        0,
-                        0,
-                        0,
-                      ).withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -81,7 +85,7 @@ class ItineraryPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      dayPlan['day'],
+                      dayPlan.day,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -90,18 +94,18 @@ class ItineraryPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "🌅 Morning: ${dayPlan['morning']}",
+                      "🌅 Morning: ${dayPlan.morning}",
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "🏞️ Afternoon: ${dayPlan['afternoon']}",
+                      "🏞️ Afternoon: ${dayPlan.afternoon}",
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
               );
-            }),
+            }).toList(),
           ],
         ),
       ),

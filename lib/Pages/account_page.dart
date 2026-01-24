@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../theme/app_theme.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -172,7 +173,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
               : null,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.blue, width: 1.2),
+            borderSide: const BorderSide(
+              color: AppTheme.accentBlue,
+              width: 1.2,
+            ),
             borderRadius: BorderRadius.circular(6),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -256,7 +260,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _updateProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(21, 101, 192, 1),
+                    backgroundColor: AppTheme.primaryBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -332,7 +336,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: ElevatedButton(
                   onPressed: _submittingReview ? null : _addReview,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(21, 101, 192, 1),
+                    backgroundColor: AppTheme.primaryBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
+import '../models/dayplan_model.dart';
+import '../services/hotel_service.dart';
 import 'itinerary_page.dart';
+import '../theme/app_theme.dart';
 
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({super.key});
@@ -11,7 +14,7 @@ class TripPlannerPage extends StatefulWidget {
 }
 
 class _TripPlannerPageState extends State<TripPlannerPage> {
-  final supabase = Supabase.instance.client;
+  final HotelService _hotelService = HotelService(Supabase.instance.client);
   List<Hotel> hotels = [];
   bool isLoading = true;
 
@@ -23,19 +26,9 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
 
   Future<void> fetchHotels() async {
     setState(() => isLoading = true);
-    try {
-      final response = await supabase.from('hotels').select('*');
-      if (response is List && response.isNotEmpty) {
-        hotels = response.map((json) => Hotel.fromJson(json)).toList();
-      } else {
-        hotels = [];
-      }
-    } catch (e, st) {
-      debugPrint('Error fetching hotels: $e\n$st');
-      hotels = [];
-    } finally {
-      setState(() => isLoading = false);
-    }
+    hotels = await _hotelService.fetchHotels();
+    debugPrint('Fetched hotels count: ${hotels.length}');
+    setState(() => isLoading = false);
   }
 
   Future<void> showDaysDialog(Hotel hotel) async {
@@ -78,14 +71,13 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
   }
 
   void generateItinerary(Hotel hotel, int days) {
-    // Generate dynamic itinerary
-    final itinerary = List.generate(
+    final itinerary = List<DayPlan>.generate(
       days,
-      (i) => {
-        "day": "Day ${i + 1}",
-        "morning": "Breakfast and morning walk near ${hotel.name}",
-        "afternoon": "Explore local attractions around ${hotel.location}",
-      },
+      (i) => DayPlan(
+        day: "Day ${i + 1}",
+        morning: "Breakfast and morning walk near ${hotel.name}",
+        afternoon: "Explore local attractions around ${hotel.location}",
+      ),
     );
 
     Navigator.push(
@@ -140,7 +132,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                             errorBuilder: (_, __, ___) => Container(
                               width: 100,
                               height: 80,
-                              color: const Color.fromARGB(255, 255, 255, 255),
+                              color: Colors.white,
                               child: const Icon(Icons.broken_image),
                             ),
                           ),
@@ -171,18 +163,8 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                                 child: ElevatedButton(
                                   onPressed: () => showDaysDialog(hotel),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color.fromARGB(
-                                      255,
-                                      25,
-                                      96,
-                                      177,
-                                    ),
-                                    foregroundColor: const Color.fromARGB(
-                                      255,
-                                      255,
-                                      255,
-                                      255,
-                                    ),
+                                    backgroundColor: AppTheme.primaryBlue,
+                                    foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),

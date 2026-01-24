@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'register_page.dart';
 import '/components/NavBar.dart';
+import '../theme/app_theme.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -30,9 +31,9 @@ class LoginPage extends StatelessWidget {
         );
 
         if (session.user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login successful!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Login successful!')));
 
           // Navigate to Home / BottomNav
           Navigator.pushReplacement(
@@ -40,17 +41,16 @@ class LoginPage extends StatelessWidget {
             MaterialPageRoute(builder: (context) => const BottomNav()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login failed')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Login failed')));
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Login error: $e')));
       }
     }
-
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -137,7 +137,7 @@ class LoginPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: loginUser,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade900,
+                      backgroundColor: AppTheme.primaryBlue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
