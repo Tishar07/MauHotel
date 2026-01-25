@@ -6,7 +6,6 @@ import '../models/review_model.dart';
 import '../services/homepage_backend.dart';
 import '../components/factorybutton.dart';
 import '../components/search_bar.dart' as components;
-import '../components/ratings_reviews_section.dart';
 import '../theme/app_theme.dart';
 import 'hotel_details_page.dart';
 
@@ -28,6 +27,9 @@ class _HomePageState extends State<HomePage> {
   Map<int, List<Review>> _hotelReviews = {};
   Map<int, bool> _reviewsLoading = {};
 
+  String _selectedSort = 'price_low_to_high';
+  Map<String, String> _selectedFilters = {};
+
   String? _firstName;
   String? _lastName;
 
@@ -38,6 +40,7 @@ class _HomePageState extends State<HomePage> {
     _fetchHotels();
   }
 
+  // -------------------- USER NAME --------------------
   Future<void> _fetchUserName() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return;
@@ -56,11 +59,49 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // -------------------- FETCH HOTELS --------------------
   Future<void> _fetchHotels() async {
     setState(() => _isLoading = true);
 
     try {
-      final hotels = await _hotelService.fetchHotels();
+      dynamic query = _supabase.from('hotels').select();
+
+      // -------- SEARCH --------
+      final search = _searchController.text.trim();
+      if (search.isNotEmpty) {
+        query = query.ilike('name', '%$search%');
+      }
+
+      // -------- FILTERS --------
+      final category = _selectedFilters['category'];
+      final amenity = _selectedFilters['amenity'];
+
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
+      }
+
+      if (amenity != null && amenity.isNotEmpty) {
+        query = query.contains('amenities', [amenity]);
+      }
+
+      // -------- SORT --------
+      switch (_selectedSort) {
+        case 'price_low_to_high':
+          query = query.order('price_per_night', ascending: true);
+          break;
+        case 'price_high_to_low':
+          query = query.order('price_per_night', ascending: false);
+          break;
+        case 'rating_high_to_low':
+          query = query.order('rating_avg', ascending: false);
+          break;
+        case 'rating_low_to_high':
+          query = query.order('rating_avg', ascending: true);
+          break;
+      }
+
+      final data = await query;
+      final hotels = (data as List).map((e) => Hotel.fromJson(e)).toList();
 
       for (var hotel in hotels) {
         _reviewsLoading[hotel.hotelId] = true;
@@ -74,6 +115,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // -------------------- FETCH REVIEWS --------------------
   Future<void> _fetchReviews(int hotelId) async {
     final reviews = await _hotelService.fetchReviews(hotelId);
     if (!mounted) return;
@@ -84,6 +126,93 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // -------------------- SORT DIALOG --------------------
+  void _showSortDialog() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => SimpleDialog(
+        title: const Text('Sort By'),
+        children: [
+          _sortOption('Price: Low to High', 'price_low_to_high'),
+          _sortOption('Price: High to Low', 'price_high_to_low'),
+          _sortOption('Rating: High to Low', 'rating_high_to_low'),
+          _sortOption('Rating: Low to High', 'rating_low_to_high'),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      setState(() => _selectedSort = result);
+      _fetchHotels();
+    }
+  }
+
+  SimpleDialogOption _sortOption(String title, String value) =>
+      SimpleDialogOption(
+        child: Text(title),
+        onPressed: () => Navigator.pop(context, value),
+      );
+
+  // -------------------- FILTER DIALOG --------------------
+  void _showFilterDialog() async {
+    String? category;
+    String? amenity;
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Filter Hotels'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: const [
+                DropdownMenuItem(value: 'Luxury', child: Text('Luxury')),
+                DropdownMenuItem(
+                  value: 'Budget-Friendly',
+                  child: Text('Budget-Friendly'),
+                ),
+                DropdownMenuItem(value: 'Resort', child: Text('Resort')),
+              ],
+              onChanged: (v) => category = v,
+            ),
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(labelText: 'Amenity'),
+              items: const [
+                DropdownMenuItem(value: 'WiFi', child: Text('Wi-Fi')),
+                DropdownMenuItem(value: 'Pool', child: Text('Pool')),
+                DropdownMenuItem(value: 'Spa', child: Text('Spa')),
+              ],
+              onChanged: (v) => amenity = v,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context, {
+                'category': category ?? '',
+                'amenity': amenity ?? '',
+              });
+            },
+            child: const Text('Apply'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      setState(() => _selectedFilters = result);
+      _fetchHotels();
+    }
+  }
+
+  // -------------------- UI --------------------
   @override
   Widget build(BuildContext context) {
     final greeting = _firstName != null
@@ -114,6 +243,7 @@ class _HomePageState extends State<HomePage> {
                   hintText: 'Search hotels...',
                   onSubmitted: (_) => _fetchHotels(),
                 ),
+
                 const SizedBox(height: 12),
 
                 Row(
@@ -121,16 +251,17 @@ class _HomePageState extends State<HomePage> {
                     PrimaryButton(
                       label: 'Filter',
                       icon: Icons.filter_list,
-                      onPressed: () {},
+                      onPressed: _showFilterDialog,
                     ),
                     const SizedBox(width: 10),
                     PrimaryButton(
                       label: 'Sort',
                       icon: Icons.sort,
-                      onPressed: () {},
+                      onPressed: _showSortDialog,
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 20),
 
                 if (_isLoading)
@@ -161,6 +292,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// -------------------- HOTEL CARD --------------------
 class _HotelCard extends StatelessWidget {
   final Hotel hotel;
   final bool isLoadingReviews;
@@ -183,7 +315,6 @@ class _HotelCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            // -------------------- IMAGE + INFO --------------------
             Row(
               children: [
                 ClipRRect(
@@ -191,7 +322,7 @@ class _HotelCard extends StatelessWidget {
                   child: hotel.imageUrl.startsWith('http')
                       ? Image.network(
                           hotel.imageUrl,
-                          height: 100,
+                          height: 120,
                           width: 120,
                           fit: BoxFit.cover,
                         )
@@ -215,6 +346,31 @@ class _HotelCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            reviews.isEmpty
+                                ? hotel.ratingAvg.toStringAsFixed(1)
+                                : (reviews.fold(
+                                            0.0,
+                                            (sum, r) => sum + r.rating,
+                                          ) /
+                                          reviews.length)
+                                      .toStringAsFixed(1),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '(${reviews.length} reviews)',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
                       Text(
                         hotel.description,
                         maxLines: 2,
@@ -238,20 +394,7 @@ class _HotelCard extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 12),
-
-            // -------------------- REVIEWS --------------------
-            RatingsReviewsSection(
-              isLoading: isLoadingReviews,
-              reviews: reviews,
-              showReviews: false,
-              showTitle: false,
-            ),
-
-            const SizedBox(height: 8),
-
-            // -------------------- BUTTON --------------------
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(

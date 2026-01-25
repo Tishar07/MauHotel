@@ -4,7 +4,6 @@ import '../models/review_model.dart';
 import '../services/comparehotels_backend.dart';
 import '../theme/app_theme.dart';
 import 'hotel_details_page.dart';
-import '../components/ratings_reviews_section.dart';
 
 class CompareHotelsPage extends StatefulWidget {
   final Hotel baseHotel;
@@ -72,7 +71,7 @@ class _CompareHotelsPageState extends State<CompareHotelsPage> {
           'Compare Similar',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color.fromARGB(255, 0, 94, 172),
+            color: AppTheme.primaryBlue,
           ),
         ),
         centerTitle: true,
@@ -159,13 +158,6 @@ class _CompareHotelCard extends StatelessWidget {
             const SizedBox(height: 12),
             ...hotel.amenities.take(3).map(_amenityRow),
             const SizedBox(height: 8),
-            RatingsReviewsSection(
-              isLoading: isLoadingReviews,
-              reviews: reviews,
-              showReviews: false,
-              showTitle: false,
-            ),
-            const Spacer(),
             Row(
               children: [
                 const Icon(Icons.star, color: Colors.amber, size: 20),
@@ -178,8 +170,14 @@ class _CompareHotelCard extends StatelessWidget {
                             .toStringAsFixed(1),
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
+                const SizedBox(width: 6),
+                Text(
+                  '(${reviews.length} reviews)',
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
               ],
             ),
+            const Spacer(),
             const SizedBox(height: 10),
             Text(
               '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}',
@@ -192,7 +190,7 @@ class _CompareHotelCard extends StatelessWidget {
             const Text(
               'per night',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primaryBlue,
               ),
