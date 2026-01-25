@@ -233,7 +233,7 @@ class _SearchPageState extends State<SearchPage> {
                 labelText: 'Destination',
                 prefixIcon: Icon(Icons.location_on),
                 filled: true,
-                fillColor: Color.fromARGB(255, 229, 229, 229),
+                fillColor: AppTheme.lightBlue,
               ),
             ),
             const SizedBox(height: 10),
@@ -241,7 +241,7 @@ class _SearchPageState extends State<SearchPage> {
             // Date range
             ListTile(
               onTap: _selectDateRange,
-              tileColor: const Color(0xFFF0F8FF),
+              tileColor: AppTheme.lightBlue,
               leading: const Icon(Icons.calendar_today),
               title: Text(
                 _selectedDates == null
@@ -259,7 +259,7 @@ class _SearchPageState extends State<SearchPage> {
                 labelText: 'Max Budget (Rs)',
                 prefixIcon: Icon(Icons.attach_money),
                 filled: true,
-                fillColor: Color(0xFFF0F8FF),
+                fillColor: AppTheme.lightBlue,
               ),
             ),
             const SizedBox(height: 10),
@@ -271,7 +271,7 @@ class _SearchPageState extends State<SearchPage> {
                 labelText: 'Hotel Type',
                 prefixIcon: Icon(Icons.hotel),
                 filled: true,
-                fillColor: Color(0xFFF0F8FF),
+                fillColor: AppTheme.lightBlue,
               ),
               items: const [
                 DropdownMenuItem(value: 'Any', child: Text('Any')),

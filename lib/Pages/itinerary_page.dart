@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/hotel_model.dart';
 import '../models/dayplan_model.dart';
+import '../theme/app_theme.dart';
 
 class ItineraryPage extends StatelessWidget {
   final Hotel hotel;
@@ -20,7 +21,7 @@ class ItineraryPage extends StatelessWidget {
           "Your Itinerary",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color.fromARGB(255, 1, 153, 255),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -40,7 +41,7 @@ class ItineraryPage extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   height: 220,
-                  color: const Color.fromARGB(255, 52, 111, 238),
+                  color: AppTheme.primaryBlue,
                   child: const Icon(Icons.broken_image, size: 60),
                 ),
               ),
@@ -89,7 +90,7 @@ class ItineraryPage extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+                        color: AppTheme.primaryBlue,
                       ),
                     ),
                     const SizedBox(height: 10),

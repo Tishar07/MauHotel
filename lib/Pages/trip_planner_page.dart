@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
-import '../models/dayplan_model.dart';
 import '../services/hotel_service.dart';
-import 'itinerary_page.dart';
 import '../theme/app_theme.dart';
 
 class TripPlannerPage extends StatefulWidget {
@@ -15,176 +13,212 @@ class TripPlannerPage extends StatefulWidget {
 
 class _TripPlannerPageState extends State<TripPlannerPage> {
   final HotelService _hotelService = HotelService(Supabase.instance.client);
-  List<Hotel> hotels = [];
-  bool isLoading = true;
+
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Hotel> _hotels = [];
+  Hotel? _selectedHotel;
+
+  bool _isLoading = true;
+  bool _isViewing = false;
 
   @override
   void initState() {
     super.initState();
-    fetchHotels();
+    _fetchHotels();
   }
 
-  Future<void> fetchHotels() async {
-    setState(() => isLoading = true);
-    hotels = await _hotelService.fetchHotels();
-    debugPrint('Fetched hotels count: ${hotels.length}');
-    setState(() => isLoading = false);
+  Future<void> _fetchHotels() async {
+    _hotels = await _hotelService.fetchHotels();
+    setState(() => _isLoading = false);
   }
 
-  Future<void> showDaysDialog(Hotel hotel) async {
-    final controller = TextEditingController();
+  void _onSearch(String value) {
+    if (value.isEmpty) {
+      setState(() => _selectedHotel = null);
+      return;
+    }
 
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Enter number of days for ${hotel.name}"),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: "Number of days",
-            hintText: "e.g: 3",
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final days = int.tryParse(controller.text);
-              if (days != null && days > 0) {
-                Navigator.pop(context);
-                generateItinerary(hotel, days);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Enter a valid number")),
-                );
-              }
-            },
-            child: const Text("Generate"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void generateItinerary(Hotel hotel, int days) {
-    final itinerary = List<DayPlan>.generate(
-      days,
-      (i) => DayPlan(
-        day: "Day ${i + 1}",
-        morning: "Breakfast and morning walk near ${hotel.name}",
-        afternoon: "Explore local attractions around ${hotel.location}",
-      ),
-    );
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ItineraryPage(hotel: hotel, itinerary: itinerary),
-      ),
-    );
+    try {
+      final match = _hotels.firstWhere(
+        (h) => h.name.toLowerCase().contains(value.toLowerCase()),
+      );
+      setState(() => _selectedHotel = match);
+    } catch (_) {
+      setState(() => _selectedHotel = null);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    const lightBlue = Color(0xFFE8F3FF);
-
     return Scaffold(
+      backgroundColor: Colors.white,
+
+      // 🔹 APP BAR
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         title: const Text(
           "Trip Planner",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton.icon(
+              onPressed: _selectedHotel == null ? null : () {},
+              icon: const Icon(Icons.add),
+              label: const Text("Plan Trip"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      backgroundColor: Colors.white,
-      body: isLoading
+
+      // 🔹 BODY
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : hotels.isEmpty
-          ? const Center(child: Text("No hotels found."))
-          : ListView.builder(
+          : Padding(
               padding: const EdgeInsets.all(16),
-              itemCount: hotels.length,
-              itemBuilder: (_, index) {
-                final hotel = hotels[index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: lightBlue,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            hotel.imageUrl,
-                            width: 100,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 100,
-                              height: 80,
-                              color: Colors.white,
-                              child: const Icon(Icons.broken_image),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                hotel.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                hotel.description ??
-                                    "No description available.",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                              const SizedBox(height: 8),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton(
-                                  onPressed: () => showDaysDialog(hotel),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryBlue,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  child: const Text("Plan Trip"),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+              child: Column(
+                children: [
+                  // 🔍 SEARCH BOX
+                  TextField(
+                    controller: _searchController,
+                    onChanged: _onSearch,
+                    decoration: InputDecoration(
+                      hintText: "Search hotel...",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFFF2F4F7),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                );
-              },
+
+                  const SizedBox(height: 24),
+
+                  // 🏨 HOTEL CARD OR EMPTY STATE
+                  _selectedHotel == null
+                      ? const Text(
+                          "Search and select a hotel to plan your trip",
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      : _buildHotelCard(_selectedHotel!),
+                ],
+              ),
             ),
+    );
+  }
+
+  // 🔹 SINGLE HOTEL CARD (matches UI)
+  Widget _buildHotelCard(Hotel hotel) {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.network(
+            hotel.imageUrl,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              height: 200,
+              color: Colors.grey.shade300,
+              child: const Icon(Icons.broken_image, size: 40),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F3FF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      hotel.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Text(
+                    "20 Dec - 31 Dec 2025",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              // 👀 VIEW BUTTON WITH LOADING
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isViewing
+                      ? null
+                      : () async {
+                          setState(() => _isViewing = true);
+
+                          await Future.delayed(const Duration(seconds: 2));
+
+                          setState(() => _isViewing = false);
+
+                          // Navigation will be added later
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: _isViewing
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          "→ View",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
