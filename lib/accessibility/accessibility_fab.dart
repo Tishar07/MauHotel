@@ -47,10 +47,6 @@ class _AccessibilityFABState extends State<AccessibilityFAB> {
                     _option('↔️', 'Spacing', () {
                       AccessibilityState.cycle(AccessibilityState.spacing, 3);
                     }),
-                    _option('ℹ️', 'Dyslexia Font', () {
-                      AccessibilityState.dyslexiaFont.value =
-                          !AccessibilityState.dyslexiaFont.value;
-                    }),
                     const Divider(),
                     _option('⟳', 'Reset', () {
                       AccessibilityState.reset();
