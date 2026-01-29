@@ -100,7 +100,7 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                       hintText: "Search hotel...",
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
-                      fillColor: const Color(0xFFF2F4F7),
+                      fillColor: AppTheme.lightBlue,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
