@@ -13,6 +13,8 @@ import '../components/ratings_reviews_section.dart'; // Reusable widget to displ
 
 import '../theme/app_theme.dart'; // Custom theme colors & styling
 
+import 'add_review_page.dart';
+
 // -------------------- HOTEL DETAILS PAGE --------------------
 /// Main page showing detailed info for a selected hotel
 class HotelDetailsPage extends StatefulWidget {
@@ -108,8 +110,6 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ================= HEADER IMAGE =================
-            // Shows the main hotel image with a semi-transparent overlay
-            // Includes back button, share button, and favorite toggle
             Stack(
               children: [
                 Image.network(
@@ -296,6 +296,40 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
               reviews: reviews,
               showReviews: true,
               showTitle: true,
+            ),
+
+            const SizedBox(height: 32),
+
+            // ================= ADD REVIEW BUTTON =================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddReviewPage(hotelId: widget.hotel.hotelId),
+                      ),
+                    ).then((_) {
+                      _loadReviews(); // Refresh reviews after returning
+                    });
+                  },
+                  icon: const Icon(Icons.rate_review),
+                  label: const Text(
+                    'Add Review and Rating',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color:Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 32),
