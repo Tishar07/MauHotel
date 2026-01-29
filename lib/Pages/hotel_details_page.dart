@@ -94,6 +94,32 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
         return Icons.roofing;
       case 'restaurant':
         return Icons.restaurant;
+      case 'gym':
+        return Icons.sports_gymnastics_rounded;
+      case 'bar':
+        return Icons.wine_bar;
+      case 'tennis courts':
+        return Icons.sports_tennis;
+      case 'private beach':
+        return Icons.beach_access_sharp;
+      case 'room service':
+        return Icons.room_service;
+      case 'hiking trails':
+        return Icons.hiking;
+      case 'nature view':
+        return Icons.forest;
+      case 'golf course':
+        return Icons.golf_course;
+      case 'snorkeling':
+        return Icons.scuba_diving;
+      case 'eco tours':
+        return Icons.eco;
+      case 'boat excursions':
+        return Icons.directions_boat;
+      case 'water sports':
+        return Icons.surfing;
+      case 'kids club':
+        return Icons.child_care;
       default:
         return Icons.check_circle_outline;
     }
@@ -310,7 +336,8 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => AddReviewPage(hotelId: widget.hotel.hotelId),
+                        builder: (_) =>
+                            AddReviewPage(hotelId: widget.hotel.hotelId),
                       ),
                     ).then((_) {
                       _loadReviews(); // Refresh reviews after returning
@@ -319,7 +346,11 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                   icon: const Icon(Icons.rate_review),
                   label: const Text(
                     'Add Review and Rating',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color:Colors.white),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,

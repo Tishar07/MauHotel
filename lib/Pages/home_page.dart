@@ -217,12 +217,7 @@ class _HomePageState extends State<HomePage> {
     FontWeight? fontWeight,
     Color? color,
   }) {
-    return TextStyle(
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      color: color,
-      fontFamily: AccessibilityState.dyslexiaFont.value ? 'OpenDyslexic' : null,
-    );
+    return TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color);
   }
 
   // -------------------- UI --------------------
@@ -366,9 +361,6 @@ class _HotelCard extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: highContrast ? Colors.white : Colors.black,
-                              fontFamily: AccessibilityState.dyslexiaFont.value
-                                  ? 'OpenDyslexic'
-                                  : null,
                             ),
                           ),
                           SizedBox(height: AccessibilityState.gap(4)),
@@ -394,10 +386,6 @@ class _HotelCard extends StatelessWidget {
                                   color: highContrast
                                       ? Colors.white
                                       : Colors.black,
-                                  fontFamily:
-                                      AccessibilityState.dyslexiaFont.value
-                                      ? 'OpenDyslexic'
-                                      : null,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -408,10 +396,6 @@ class _HotelCard extends StatelessWidget {
                                   color: highContrast
                                       ? Colors.white70
                                       : Colors.grey,
-                                  fontFamily:
-                                      AccessibilityState.dyslexiaFont.value
-                                      ? 'OpenDyslexic'
-                                      : null,
                                 ),
                               ),
                             ],
@@ -425,9 +409,6 @@ class _HotelCard extends StatelessWidget {
                               color: highContrast
                                   ? Colors.white
                                   : Colors.black87,
-                              fontFamily: AccessibilityState.dyslexiaFont.value
-                                  ? 'OpenDyslexic'
-                                  : null,
                             ),
                           ),
                           SizedBox(height: AccessibilityState.gap(8)),
@@ -439,9 +420,6 @@ class _HotelCard extends StatelessWidget {
                               color: highContrast
                                   ? Colors.white
                                   : AppTheme.primaryBlue,
-                              fontFamily: AccessibilityState.dyslexiaFont.value
-                                  ? 'OpenDyslexic'
-                                  : null,
                             ),
                           ),
                         ],

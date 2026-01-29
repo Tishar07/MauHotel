@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../theme/app_theme.dart';
 
 class AddReviewPage extends StatefulWidget {
   final int hotelId;
@@ -19,7 +20,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
   Future<void> _submitReview() async {
     if (_rating == 0 || _commentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please give a rating and write a comment')),
+        const SnackBar(
+          content: Text('Please give a rating and write a comment'),
+        ),
       );
       return;
     }
@@ -42,9 +45,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting review: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error submitting review: $e')));
     } finally {
       setState(() => _submitting = false);
     }
@@ -72,7 +75,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Review'),
-        backgroundColor: const Color.fromRGBO(21, 101, 192, 1),
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -101,7 +104,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
               child: ElevatedButton(
                 onPressed: _submitting ? null : _submitReview,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(21, 101, 192, 1),
+                  backgroundColor: AppTheme.primaryBlue,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

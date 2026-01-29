@@ -4,7 +4,6 @@ class AccessibilityState {
   static final ValueNotifier<int> contrast = ValueNotifier(1);
   static final ValueNotifier<int> textSize = ValueNotifier(1);
   static final ValueNotifier<int> spacing = ValueNotifier(1);
-  static final ValueNotifier<bool> dyslexiaFont = ValueNotifier(false);
 
   static void cycle(ValueNotifier<int> notifier, int max) {
     notifier.value = notifier.value % max + 1;
@@ -14,7 +13,6 @@ class AccessibilityState {
     contrast.value = 1;
     textSize.value = 1;
     spacing.value = 1;
-    dyslexiaFont.value = false;
   }
 
   // =========================
@@ -40,9 +38,5 @@ class AccessibilityState {
     return base * spacingScale();
   }
 
-  static final Listenable rebuild = Listenable.merge([
-    contrast,
-    spacing,
-    dyslexiaFont,
-  ]);
+  static final Listenable rebuild = Listenable.merge([contrast, spacing]);
 }

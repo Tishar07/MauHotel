@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../accessibility/accessibility_state.dart';
 
 class SearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -17,28 +18,45 @@ class SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onSubmitted: onSubmitted,
-      decoration: InputDecoration(
-        hintText: hintText,
-        prefixIcon: const Icon(Icons.search),
-        suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  controller.clear();
-                  onClear?.call();
-                },
-              )
-            : null,
-        filled: true,
-        fillColor: AppTheme.lightBlue,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: BorderSide.none,
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: AccessibilityState.rebuild,
+      builder: (context, _) {
+        final bool highContrast = AccessibilityState.contrast.value >= 2;
+
+        return TextField(
+          controller: controller,
+          onSubmitted: onSubmitted,
+          style: TextStyle(color: highContrast ? Colors.white : Colors.black),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(
+              color: highContrast ? Colors.white70 : Colors.grey,
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: highContrast ? Colors.white : Colors.black54,
+            ),
+            suffixIcon: controller.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: highContrast ? Colors.white : Colors.black54,
+                    ),
+                    onPressed: () {
+                      controller.clear();
+                      onClear?.call();
+                    },
+                  )
+                : null,
+            filled: true,
+            fillColor: highContrast ? Colors.black : AppTheme.lightBlue,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        );
+      },
     );
   }
 }
