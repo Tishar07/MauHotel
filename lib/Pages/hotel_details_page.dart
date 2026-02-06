@@ -1,24 +1,25 @@
-import 'package:flutter/material.dart'; // Core Flutter widgets
+import 'package:flutter/material.dart';
 
-import '../models/hotel_model.dart'; // Hotel class model
-import '../models/review_model.dart'; // Review class model
+import '../models/hotel_model.dart';
+import '../models/review_model.dart';
 
-import '../pages/booking_page.dart'; // BookingPage for "Book Now" button
-import '../pages/compare_hotels_page.dart'; // CompareHotelsPage for comparing hotels
+import '../pages/booking_page.dart';
+import '../pages/compare_hotels_page.dart';
 
-import '../services/hoteldetails_backend.dart'; // Backend service to fetch hotels & reviews
+import '../services/hoteldetails_backend.dart';
 
-import '../components/factorybutton.dart'; // PrimaryButton reusable widget
-import '../components/ratings_reviews_section.dart'; // Reusable widget to display reviews
+import '../components/factorybutton.dart';
+import '../components/ratings_reviews_section.dart';
 
-import '../theme/app_theme.dart'; // Custom theme colors & styling
+import '../theme/app_theme.dart';
+
+import '../accessibility/accessibility_state.dart';
 
 import 'add_review_page.dart';
 
 // -------------------- HOTEL DETAILS PAGE --------------------
-/// Main page showing detailed info for a selected hotel
 class HotelDetailsPage extends StatefulWidget {
-  final Hotel hotel; // Hotel object passed from previous page
+  final Hotel hotel;
 
   const HotelDetailsPage({super.key, required this.hotel});
 
@@ -28,72 +29,59 @@ class HotelDetailsPage extends StatefulWidget {
 
 class _HotelDetailsPageState extends State<HotelDetailsPage> {
   final HotelDetailsService backend = HotelDetailsService();
-  // Backend service to fetch reviews and all hotels
 
-  bool isLoved = false; // Favorite toggle
-  bool isLoadingReviews = true; // Loading state for reviews section
-  bool isLoadingHotels = true; // Loading state for "Compare Similar" button
+  bool isLoved = false;
+  bool isLoadingReviews = true;
+  bool isLoadingHotels = true;
 
-  List<Review> reviews = []; // Stores reviews fetched from backend
-  List<Hotel> allHotels = []; // Stores all hotels for comparison
+  List<Review> reviews = [];
+  List<Hotel> allHotels = [];
 
   @override
   void initState() {
     super.initState();
-    _loadReviews(); // Fetch reviews for this hotel
-    _loadHotels(); // Fetch all hotels for comparison
+    _loadReviews();
+    _loadHotels();
   }
 
-  // -------------------- LOAD REVIEWS --------------------
-  /// Fetch reviews from backend for the current hotel
   Future<void> _loadReviews() async {
     final fetchedReviews = await backend.fetchReviews(widget.hotel.hotelId);
-
-    if (!mounted) return; // Prevent setState if widget is disposed
-
-    setState(() {
-      reviews = fetchedReviews; // Store reviews
-      isLoadingReviews = false; // Stop loading indicator
-    });
-  }
-
-  // -------------------- LOAD ALL HOTELS --------------------
-  /// Fetch all hotels for "Compare Similar" feature
-  Future<void> _loadHotels() async {
-    final fetchedHotels = await backend.fetchAllHotels();
-
     if (!mounted) return;
 
     setState(() {
-      allHotels = fetchedHotels; // Store all hotels
-      isLoadingHotels = false; // Enable "Compare Similar" button
+      reviews = fetchedReviews;
+      isLoadingReviews = false;
     });
   }
 
-  // -------------------- AMENITY ICON MAPPER --------------------
-  /// Returns an appropriate icon for each amenity
+  Future<void> _loadHotels() async {
+    final fetchedHotels = await backend.fetchAllHotels();
+    if (!mounted) return;
+
+    setState(() {
+      allHotels = fetchedHotels;
+      isLoadingHotels = false;
+    });
+  }
+
   IconData getAmenityIcon(String amenity) {
     switch (amenity.toLowerCase()) {
       case 'wifi':
-      case 'free wifi':
         return Icons.wifi;
       case 'pool':
-      case 'swimming pool':
         return Icons.pool;
       case 'spa':
         return Icons.spa;
-      case 'private pool':
-        return Icons.water;
-      case 'yoga classes':
-        return Icons.self_improvement;
-      case 'beach access':
-        return Icons.beach_access;
-      case 'butler services':
-        return Icons.room_service;
-      case 'rooftop bar':
-        return Icons.roofing;
       case 'restaurant':
         return Icons.restaurant;
+      case 'gym':
+        return Icons.fitness_center;
+      case 'golf course':
+        return Icons.golf_course;
+      case 'snorkeling':
+        return Icons.scuba_diving;
+      case 'kids club':
+        return Icons.child_care;
       case 'gym':
         return Icons.sports_gymnastics_rounded;
       case 'bar':
@@ -125,265 +113,350 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
     }
   }
 
-  // -------------------- BUILD METHOD --------------------
   @override
   Widget build(BuildContext context) {
     final hotel = widget.hotel;
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= HEADER IMAGE =================
-            Stack(
+    return AnimatedBuilder(
+      animation: AccessibilityState.rebuild,
+      builder: (context, _) {
+        final highContrast = AccessibilityState.contrast.value >= 2;
+
+        return Scaffold(
+          backgroundColor: highContrast ? Colors.black : Colors.white,
+
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  hotel.imageUrl,
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-                Container(
-                  height: 300,
-                  width: double.infinity,
-                  color: Colors.blue.withOpacity(0.3),
-                ),
-                Positioned(
-                  top: 40,
-                  left: 16,
-                  child: CircleAvatar(
-                    backgroundColor: AppTheme.primaryBlue,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                // ================= HEADER IMAGE =================
+                Stack(
+                  children: [
+                    Image.network(
+                      hotel.imageUrl,
+                      height: 300,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 16,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
+
+                    Container(
+                      height: 300,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.25),
+                    ),
+
+                    Positioned(
+                      top: 40,
+                      left: 16,
+                      child: CircleAvatar(
                         backgroundColor: AppTheme.primaryBlue,
                         child: IconButton(
-                          icon: const Icon(Icons.share, color: Colors.white),
-                          onPressed: () {},
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          icon: Icon(
-                            isLoved ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.red,
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
                           ),
-                          onPressed: () => setState(() => isLoved = !isLoved),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // ================= HOTEL NAME & LOCATION =================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      hotel.name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 18,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          hotel.location,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ],
+
+                    Positioned(
+                      top: 40,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppTheme.primaryBlue,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.share,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {},
+                            ),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          CircleAvatar(
+                            backgroundColor: Colors.white,
+                            child: IconButton(
+                              icon: Icon(
+                                isLoved
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: Colors.red,
+                              ),
+                              onPressed: () =>
+                                  setState(() => isLoved = !isLoved),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-            // ================= PRICE & BOOK BUTTON =================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / night',
-                    style: const TextStyle(
-                      color: AppTheme.primaryBlue,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Total includes taxes & fees',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 12),
-                  PrimaryButton(
-                    label: 'Book Now',
-                    icon: Icons.book_online,
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BookingPage(hotel: hotel),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ================= AMENITIES =================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 32,
-                runSpacing: 24,
-                children: hotel.amenities.map((amenity) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(getAmenityIcon(amenity), size: 28),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: 80,
-                        child: Text(
-                          amenity,
+                // ================= HOTEL NAME =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    // <-- Wrap in Center
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment
+                          .center, // <-- Ensure text inside is centered
+                      children: [
+                        Text(
+                          hotel.name,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: highContrast ? Colors.white : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
 
-            const SizedBox(height: 24),
+                        const SizedBox(height: 6),
 
-            // ================= ABOUT HOTEL =================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'About this hotel',
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: AppTheme.primaryBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(hotel.description, style: const TextStyle(fontSize: 16)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ================= REVIEWS SECTION =================
-            RatingsReviewsSection(
-              isLoading: isLoadingReviews,
-              reviews: reviews,
-              showReviews: true,
-              showTitle: true,
-            ),
-
-            const SizedBox(height: 32),
-
-            // ================= ADD REVIEW BUTTON =================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            AddReviewPage(hotelId: widget.hotel.hotelId),
-                      ),
-                    ).then((_) {
-                      _loadReviews(); // Refresh reviews after returning
-                    });
-                  },
-                  icon: const Icon(Icons.rate_review),
-                  label: const Text(
-                    'Add Review and Rating',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                        Row(
+                          mainAxisSize:
+                              MainAxisSize.min, // <-- makes row wrap tightly
+                          mainAxisAlignment:
+                              MainAxisAlignment.center, // <-- center the row
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              size: 18,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              hotel.location,
+                              style: TextStyle(
+                                color: highContrast
+                                    ? Colors.white70
+                                    : Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 32),
-
-            // ================= COMPARE HOTELS BUTTON =================
-            Center(
-              child: PrimaryButton(
-                label: 'Compare Similar',
-                icon: Icons.compare_arrows,
-                onPressed: isLoadingHotels
-                    ? () {} // Do nothing if hotels are still loading
-                    : () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CompareHotelsPage(baseHotel: hotel),
+                // ================= PRICE & BOOK =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AccessibilityState.t(
+                          'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / night',
+                          'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / nuit',
+                        ),
+                        style: TextStyle(
+                          color: highContrast
+                              ? Colors.white
+                              : AppTheme.primaryBlue,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-              ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        AccessibilityState.t(
+                          'Total includes taxes & fees',
+                          'Total inclut taxes et frais',
+                        ),
+                        style: const TextStyle(color: Colors.red),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      PrimaryButton(
+                        label: AccessibilityState.t('Book Now', 'Réserver'),
+                        icon: Icons.book_online,
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BookingPage(hotel: hotel),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ================= AMENITIES =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 32,
+                    runSpacing: 24,
+                    children: hotel.amenities.map((amenity) {
+                      return Column(
+                        children: [
+                          Icon(
+                            getAmenityIcon(amenity),
+                            size: 28,
+                            color: highContrast
+                                ? Colors.white
+                                : Colors.black, // <-- Add this line
+                          ),
+                          const SizedBox(height: 6),
+
+                          SizedBox(
+                            width: 80,
+                            child: Text(
+                              amenity,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: highContrast
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // ================= ABOUT =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AccessibilityState.t(
+                          'About this hotel',
+                          'À propos de cet hôtel',
+                        ),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: highContrast
+                              ? Colors.white
+                              : AppTheme.primaryBlue,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Text(
+                        AccessibilityState.translateDescription(
+                          hotel.description,
+                        ),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: highContrast ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ================= REVIEWS =================
+                Container(
+                  color: highContrast
+                      ? Colors.black
+                      : Colors.white, // <-- Set background
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
+                  ),
+                  child: RatingsReviewsSection(
+                    isLoading: isLoadingReviews,
+                    reviews: reviews,
+                    showReviews: true,
+                    showTitle: true,
+                  ),
+                ),
+
+                // ================= ADD REVIEW =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AddReviewPage(hotelId: widget.hotel.hotelId),
+                          ),
+                        ).then((_) => _loadReviews());
+                      },
+                      icon: const Icon(
+                        Icons.rate_review,
+                        color: Colors.white, // ✅ icon white
+                      ),
+                      label: Text(
+                        AccessibilityState.t(
+                          'Add Review and Rating',
+                          'Ajouter un avis et une note',
+                        ),
+                        style: const TextStyle(
+                          color: Colors.white, // ✅ text white
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor:
+                            Colors.white, // ✅ ensures icon/text stay white
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // ================= COMPARE =================
+                Center(
+                  child: PrimaryButton(
+                    label: AccessibilityState.t(
+                      'Compare Similar',
+                      'Comparer hôtels similaires',
+                    ),
+                    icon: Icons.compare_arrows,
+                    onPressed: isLoadingHotels
+                        ? () {}
+                        : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CompareHotelsPage(baseHotel: hotel),
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

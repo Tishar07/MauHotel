@@ -8,10 +8,8 @@ import '../components/factorybutton.dart';
 import '../components/search_bar.dart' as components;
 import '../theme/app_theme.dart';
 import 'hotel_details_page.dart';
-import '../accessibility/accessibility_fab.dart';
 import '../accessibility/accessibility_state.dart';
 
-// -------------------- HOME PAGE --------------------
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -42,7 +40,6 @@ class _HomePageState extends State<HomePage> {
     _fetchHotels();
   }
 
-  // -------------------- USER NAME --------------------
   Future<void> _fetchUserName() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return;
@@ -53,6 +50,8 @@ class _HomePageState extends State<HomePage> {
         .eq('user_id', user.id)
         .maybeSingle();
 
+    if (!mounted) return;
+
     if (data != null) {
       setState(() {
         _firstName = data['first_name'];
@@ -61,7 +60,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // -------------------- FETCH HOTELS --------------------
   Future<void> _fetchHotels() async {
     setState(() => _isLoading = true);
 
@@ -108,13 +106,13 @@ class _HomePageState extends State<HomePage> {
         _fetchReviews(hotel.hotelId);
       }
 
+      if (!mounted) return;
       setState(() => _hotels = hotels);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // -------------------- FETCH REVIEWS --------------------
   Future<void> _fetchReviews(int hotelId) async {
     final reviews = await _hotelService.fetchReviews(hotelId);
     if (!mounted) return;
@@ -125,17 +123,28 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // -------------------- SORT DIALOG --------------------
   void _showSortDialog() async {
     final result = await showDialog<String>(
       context: context,
       builder: (_) => SimpleDialog(
-        title: const Text('Sort By'),
+        title: Text(AccessibilityState.t('Sort By', 'Trier par')),
         children: [
-          _sortOption('Price: Low to High', 'price_low_to_high'),
-          _sortOption('Price: High to Low', 'price_high_to_low'),
-          _sortOption('Rating: High to Low', 'rating_high_to_low'),
-          _sortOption('Rating: Low to High', 'rating_low_to_high'),
+          _sortOption(
+            AccessibilityState.t('Price: Low to High', 'Prix : Croissant'),
+            'price_low_to_high',
+          ),
+          _sortOption(
+            AccessibilityState.t('Price: High to Low', 'Prix : Décroissant'),
+            'price_high_to_low',
+          ),
+          _sortOption(
+            AccessibilityState.t('Rating: High to Low', 'Note : Décroissante'),
+            'rating_high_to_low',
+          ),
+          _sortOption(
+            AccessibilityState.t('Rating: Low to High', 'Note : Croissante'),
+            'rating_low_to_high',
+          ),
         ],
       ),
     );
@@ -152,7 +161,6 @@ class _HomePageState extends State<HomePage> {
         onPressed: () => Navigator.pop(context, value),
       );
 
-  // -------------------- FILTER DIALOG --------------------
   void _showFilterDialog() async {
     String? category;
     String? amenity;
@@ -160,12 +168,16 @@ class _HomePageState extends State<HomePage> {
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Filter Hotels'),
+        title: Text(
+          AccessibilityState.t('Filter Hotels', 'Filtrer les hôtels'),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Category'),
+              decoration: InputDecoration(
+                labelText: AccessibilityState.t('Category', 'Catégorie'),
+              ),
               items: const [
                 DropdownMenuItem(value: 'Luxury', child: Text('Luxury')),
                 DropdownMenuItem(
@@ -177,7 +189,9 @@ class _HomePageState extends State<HomePage> {
               onChanged: (v) => category = v,
             ),
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Amenity'),
+              decoration: InputDecoration(
+                labelText: AccessibilityState.t('Amenity', 'Équipement'),
+              ),
               items: const [
                 DropdownMenuItem(value: 'WiFi', child: Text('Wi-Fi')),
                 DropdownMenuItem(value: 'Pool', child: Text('Pool')),
@@ -190,7 +204,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AccessibilityState.t('Cancel', 'Annuler')),
           ),
           ElevatedButton(
             onPressed: () {
@@ -199,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                 'amenity': amenity ?? '',
               });
             },
-            child: const Text('Apply'),
+            child: Text(AccessibilityState.t('Apply', 'Appliquer')),
           ),
         ],
       ),
@@ -211,93 +225,101 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // -------------------- ACCESSIBILITY TEXT STYLE --------------------
-  TextStyle _textStyle({
-    double? fontSize,
-    FontWeight? fontWeight,
-    Color? color,
-  }) {
-    return TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color);
-  }
-
-  // -------------------- UI --------------------
   @override
   Widget build(BuildContext context) {
-    final greeting = _firstName != null
-        ? 'Welcome to MauHotel,\n$_firstName $_lastName!'
-        : 'Welcome to MauHotel!';
-
     return AnimatedBuilder(
       animation: AccessibilityState.rebuild,
       builder: (context, _) {
+        final highContrast = AccessibilityState.contrast.value >= 2;
+
+        final greeting = _firstName != null
+            ? AccessibilityState.t(
+                'Welcome to MauHotel,\n$_firstName $_lastName!',
+                'Bienvenue à MauHotel,\n$_firstName $_lastName!',
+              )
+            : AccessibilityState.t(
+                'Welcome to MauHotel!',
+                'Bienvenue à MauHotel!',
+              );
+
         return Scaffold(
-          body: Stack(
-            children: [
-              SafeArea(
-                child: RefreshIndicator(
-                  onRefresh: _fetchHotels,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: AccessibilityState.padding(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          backgroundColor: highContrast ? Colors.black : Colors.white,
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _fetchHotels,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AccessibilityState.padding(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      greeting,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: highContrast ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: AccessibilityState.gap(16)),
+                    components.SearchBar(
+                      controller: _searchController,
+                      hintText: AccessibilityState.t(
+                        'Search hotels...',
+                        'Rechercher des hôtels...',
+                      ),
+                      onSubmitted: (_) => _fetchHotels(),
+                    ),
+                    SizedBox(height: AccessibilityState.gap(12)),
+                    Row(
                       children: [
-                        Text(
-                          greeting,
-                          style: _textStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        PrimaryButton(
+                          label: AccessibilityState.t('Filter', 'Filtrer'),
+                          icon: Icons.filter_list,
+                          onPressed: _showFilterDialog,
                         ),
-                        SizedBox(height: AccessibilityState.gap(16)),
-                        components.SearchBar(
-                          controller: _searchController,
-                          hintText: 'Search hotels...',
-                          onSubmitted: (_) => _fetchHotels(),
+                        SizedBox(width: AccessibilityState.gap(10)),
+                        PrimaryButton(
+                          label: AccessibilityState.t('Sort', 'Trier'),
+                          icon: Icons.sort,
+                          onPressed: _showSortDialog,
                         ),
-                        SizedBox(height: AccessibilityState.gap(12)),
-                        Row(
-                          children: [
-                            PrimaryButton(
-                              label: 'Filter',
-                              icon: Icons.filter_list,
-                              onPressed: _showFilterDialog,
-                            ),
-                            SizedBox(width: AccessibilityState.gap(10)),
-                            PrimaryButton(
-                              label: 'Sort',
-                              icon: Icons.sort,
-                              onPressed: _showSortDialog,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AccessibilityState.gap(20)),
-                        if (_isLoading)
-                          const Center(child: CircularProgressIndicator())
-                        else if (_hotels.isEmpty)
-                          const Center(child: Text('No hotels found'))
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _hotels.length,
-                            itemBuilder: (_, i) {
-                              final hotel = _hotels[i];
-                              return _HotelCard(
-                                hotel: hotel,
-                                isLoadingReviews:
-                                    _reviewsLoading[hotel.hotelId] ?? true,
-                                reviews: _hotelReviews[hotel.hotelId] ?? [],
-                              );
-                            },
-                          ),
                       ],
                     ),
-                  ),
+                    SizedBox(height: AccessibilityState.gap(20)),
+                    if (_isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_hotels.isEmpty)
+                      Center(
+                        child: Text(
+                          AccessibilityState.t(
+                            'No hotels found',
+                            'Aucun hôtel trouvé',
+                          ),
+                          style: TextStyle(
+                            color: highContrast ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _hotels.length,
+                        itemBuilder: (_, i) {
+                          final hotel = _hotels[i];
+                          return _HotelCard(
+                            hotel: hotel,
+                            isLoadingReviews:
+                                _reviewsLoading[hotel.hotelId] ?? true,
+                            reviews: _hotelReviews[hotel.hotelId] ?? [],
+                          );
+                        },
+                      ),
+                  ],
                 ),
               ),
-              const AccessibilityFAB(),
-            ],
+            ),
           ),
         );
       },
@@ -305,7 +327,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// -------------------- HOTEL CARD --------------------
 class _HotelCard extends StatelessWidget {
   final Hotel hotel;
   final bool isLoadingReviews;
@@ -331,7 +352,6 @@ class _HotelCard extends StatelessWidget {
             padding: AccessibilityState.padding(12),
             child: Column(
               children: [
-                // ⬅️ rest of card unchanged
                 Row(
                   children: [
                     ClipRRect(
@@ -390,7 +410,10 @@ class _HotelCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '(${reviews.length} reviews)',
+                                AccessibilityState.t(
+                                  '(${reviews.length} reviews)',
+                                  '(${reviews.length} avis)',
+                                ),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: highContrast
@@ -413,7 +436,10 @@ class _HotelCard extends StatelessWidget {
                           ),
                           SizedBox(height: AccessibilityState.gap(8)),
                           Text(
-                            '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)} per night',
+                            AccessibilityState.t(
+                              '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)} per night',
+                              '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)} par nuit',
+                            ),
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -431,16 +457,16 @@ class _HotelCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HotelDetailsPage(hotel: hotel),
-                        ),
-                      );
-                    },
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HotelDetailsPage(hotel: hotel),
+                      ),
+                    ),
                     icon: const Icon(Icons.arrow_forward, size: 16),
-                    label: const Text('View Details'),
+                    label: Text(
+                      AccessibilityState.t('View Details', 'Voir détails'),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryBlue,
                       foregroundColor: Colors.white,

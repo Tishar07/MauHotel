@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'Pages/register_page.dart';
 import 'Pages/login_page.dart';
 import 'accessibility/accessibility_state.dart';
+import 'accessibility/accessibility_fab.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,13 +33,21 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'My Hotel App',
           debugShowCheckedModeBanner: false,
+
           builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
-              child: child!,
+            return Stack(
+              children: [
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: scale),
+                  child: child!,
+                ),
+                const AccessibilityFAB(), // 🌍 Global accessibility popup
+              ],
             );
           },
+
           theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+
           home: const LoginPage(),
         );
       },

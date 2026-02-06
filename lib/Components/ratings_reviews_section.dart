@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/review_model.dart';
 import '../theme/app_theme.dart';
 import 'review_tile.dart';
-
+import '../accessibility/accessibility_state.dart';
 
 class RatingsReviewsSection extends StatelessWidget {
   final bool isLoading;
@@ -25,12 +25,16 @@ class RatingsReviewsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final highContrast = AccessibilityState.contrast.value >= 2;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: highContrast
+              ? Colors.black
+              : Colors.white, // high contrast background
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -38,10 +42,13 @@ class RatingsReviewsSection extends StatelessWidget {
           children: [
             // ---------- TITLE ----------
             if (showTitle)
-              const Text(
-                'Ratings & Reviews',
+              Text(
+                AccessibilityState.t(
+                  'Ratings & Reviews', // English
+                  'Notes et Avis', // French
+                ),
                 style: TextStyle(
-                  color: AppTheme.primaryBlue,
+                  color: highContrast ? Colors.white : AppTheme.primaryBlue,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
@@ -50,29 +57,45 @@ class RatingsReviewsSection extends StatelessWidget {
             if (showTitle) const SizedBox(height: 8),
 
             // ---------- LOADING ----------
-            if (isLoading) const Center(child: CircularProgressIndicator()),
+            if (isLoading)
+              Center(
+                child: CircularProgressIndicator(
+                  color: highContrast ? Colors.white : AppTheme.primaryBlue,
+                ),
+              ),
 
             // ---------- EMPTY ----------
             if (!isLoading && reviews.isEmpty)
-              const Text(
-                'No reviews yet. Be the first to review this hotel!',
-                style: TextStyle(color: Colors.grey),
+              Text(
+                AccessibilityState.t(
+                  'No reviews yet. Be the first to review this hotel!', // English
+                  'Pas encore d’avis. Soyez le premier à évaluer cet hôtel !', // French
+                ),
+                style: TextStyle(
+                  color: highContrast ? Colors.white70 : Colors.grey,
+                ),
               ),
 
             // ---------- RATING + REVIEWS ----------
             if (!isLoading && reviews.isNotEmpty) ...[
+              const SizedBox(height: 8),
               Row(
                 children: [
                   const Icon(Icons.star, color: Colors.amber),
                   const SizedBox(width: 4),
                   Text(
                     '${averageRating.toStringAsFixed(1)} / 5.0',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: highContrast ? Colors.white : Colors.black87,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '(${reviews.length} reviews)',
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: highContrast ? Colors.white70 : Colors.grey,
+                    ),
                   ),
                 ],
               ),

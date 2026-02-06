@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
 import '../services/hotel_service.dart';
 import '../theme/app_theme.dart';
+import '../accessibility/accessibility_state.dart';
 
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({super.key});
@@ -13,7 +14,6 @@ class TripPlannerPage extends StatefulWidget {
 
 class _TripPlannerPageState extends State<TripPlannerPage> {
   final HotelService _hotelService = HotelService(Supabase.instance.client);
-
   final TextEditingController _searchController = TextEditingController();
 
   List<Hotel> _hotels = [];
@@ -51,80 +51,104 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return AnimatedBuilder(
+      animation: AccessibilityState.rebuild,
+      builder: (context, _) {
+        final bool highContrast = AccessibilityState.contrast.value >= 2;
 
-      // 🔹 APP BAR
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          "Trip Planner",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton.icon(
-              onPressed: _selectedHotel == null ? null : () {},
-              icon: const Icon(Icons.add),
-              label: const Text("Plan Trip"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+        return Scaffold(
+          backgroundColor: highContrast ? Colors.black : Colors.white,
+
+          // 🔹 APP BAR
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: highContrast ? Colors.black : Colors.white,
+            title: Text(
+              "Trip Planner",
+              style: TextStyle(
+                color: highContrast ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
               ),
             ),
-          ),
-        ],
-      ),
-
-      // 🔹 BODY
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // 🔍 SEARCH BOX
-                  TextField(
-                    controller: _searchController,
-                    onChanged: _onSearch,
-                    decoration: InputDecoration(
-                      hintText: "Search hotel...",
-                      prefixIcon: const Icon(Icons.search),
-                      filled: true,
-                      fillColor: AppTheme.lightBlue,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ElevatedButton.icon(
+                  onPressed: _selectedHotel == null ? null : () {},
+                  icon: const Icon(Icons.add),
+                  label: const Text("Plan Trip"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: highContrast
+                        ? Colors.white
+                        : AppTheme.primaryBlue,
+                    foregroundColor: highContrast ? Colors.black : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // 🏨 HOTEL CARD OR EMPTY STATE
-                  _selectedHotel == null
-                      ? const Text(
-                          "Search and select a hotel to plan your trip",
-                          style: TextStyle(color: Colors.grey),
-                        )
-                      : _buildHotelCard(_selectedHotel!),
-                ],
+                ),
               ),
-            ),
+            ],
+          ),
+
+          // 🔹 BODY
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // 🔍 SEARCH BOX
+                      TextField(
+                        controller: _searchController,
+                        onChanged: _onSearch,
+                        style: TextStyle(
+                          color: highContrast ? Colors.white : Colors.black,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Search hotel...",
+                          hintStyle: TextStyle(
+                            color: highContrast ? Colors.white70 : Colors.grey,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: highContrast ? Colors.white : Colors.black54,
+                          ),
+                          filled: true,
+                          fillColor: highContrast
+                              ? Colors.grey.shade900
+                              : Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // 🏨 HOTEL CARD OR EMPTY STATE
+                      _selectedHotel == null
+                          ? Text(
+                              "Search and select a hotel to plan your trip",
+                              style: TextStyle(
+                                color: highContrast
+                                    ? Colors.white70
+                                    : Colors.grey,
+                              ),
+                            )
+                          : _buildHotelCard(_selectedHotel!, highContrast),
+                    ],
+                  ),
+                ),
+        );
+      },
     );
   }
 
-  // 🔹 SINGLE HOTEL CARD (matches UI)
-  Widget _buildHotelCard(Hotel hotel) {
+  // 🔹 SINGLE HOTEL CARD (ACCESSIBLE)
+  Widget _buildHotelCard(Hotel hotel, bool highContrast) {
     return Column(
       children: [
         ClipRRect(
@@ -147,7 +171,9 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F3FF),
+            color: highContrast
+                ? Colors.grey.shade900
+                : const Color(0xFFE8F3FF),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -158,23 +184,27 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                   Expanded(
                     child: Text(
                       hotel.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: highContrast ? Colors.white : Colors.black,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Text(
+                  Text(
                     "20 Dec - 31 Dec 2025",
-                    style: TextStyle(fontSize: 12),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: highContrast ? Colors.white70 : Colors.black54,
+                    ),
                   ),
                 ],
               ),
 
               const SizedBox(height: 14),
 
-              // 👀 VIEW BUTTON WITH LOADING
+              // 👀 VIEW BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -182,16 +212,14 @@ class _TripPlannerPageState extends State<TripPlannerPage> {
                       ? null
                       : () async {
                           setState(() => _isViewing = true);
-
                           await Future.delayed(const Duration(seconds: 2));
-
                           setState(() => _isViewing = false);
-
-                          // Navigation will be added later
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: highContrast
+                        ? Colors.white
+                        : AppTheme.primaryBlue,
+                    foregroundColor: highContrast ? Colors.black : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),

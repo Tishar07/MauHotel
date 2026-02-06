@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/hotel_model.dart';
 import 'hotel_details_page.dart';
 import '../theme/app_theme.dart';
+import '../accessibility/accessibility_state.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -93,9 +94,15 @@ class _SearchPageState extends State<SearchPage> {
       setState(() => _hotels = hotels);
     } catch (e, st) {
       debugPrint('Fetch error: $e\n$st');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error fetching hotels')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AccessibilityState.language.value == 1
+                ? 'Erreur lors de la récupération des hôtels'
+                : 'Error fetching hotels',
+          ),
+        ),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -115,15 +122,29 @@ class _SearchPageState extends State<SearchPage> {
 
   // --------------------- SORT DIALOG ---------------------
   void _showSortDialog() async {
+    final isFrench = AccessibilityState.language.value == 1;
+
     final result = await showDialog<String>(
       context: context,
       builder: (_) => SimpleDialog(
-        title: const Text('Sort By'),
+        title: Text(isFrench ? 'Trier par' : 'Sort By'),
         children: [
-          _sortOption('Price: Low to High', 'price_low_to_high'),
-          _sortOption('Price: High to Low', 'price_high_to_low'),
-          _sortOption('Rating: High to Low', 'rating_high_to_low'),
-          _sortOption('Rating: Low to High', 'rating_low_to_high'),
+          _sortOption(
+            isFrench ? 'Prix : Croissant' : 'Price: Low to High',
+            'price_low_to_high',
+          ),
+          _sortOption(
+            isFrench ? 'Prix : Décroissant' : 'Price: High to Low',
+            'price_high_to_low',
+          ),
+          _sortOption(
+            isFrench ? 'Note : Décroissante' : 'Rating: High to Low',
+            'rating_high_to_low',
+          ),
+          _sortOption(
+            isFrench ? 'Note : Croissante' : 'Rating: Low to High',
+            'rating_low_to_high',
+          ),
         ],
       ),
     );
@@ -141,18 +162,21 @@ class _SearchPageState extends State<SearchPage> {
 
   // --------------------- FILTER DIALOG ---------------------
   void _showFilterDialog() async {
+    final isFrench = AccessibilityState.language.value == 1;
     String? category;
     String? amenity;
 
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Filter Hotels'),
+        title: Text(isFrench ? 'Filtrer les hôtels' : 'Filter Hotels'),
         content: SingleChildScrollView(
           child: Column(
             children: [
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: InputDecoration(
+                  labelText: isFrench ? 'Catégorie' : 'Category',
+                ),
                 items: const [
                   DropdownMenuItem(value: 'Luxury', child: Text('Luxury')),
                   DropdownMenuItem(
@@ -168,7 +192,9 @@ class _SearchPageState extends State<SearchPage> {
                 onChanged: (v) => category = v,
               ),
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Amenity'),
+                decoration: InputDecoration(
+                  labelText: isFrench ? 'Équipement' : 'Amenity',
+                ),
                 items: const [
                   DropdownMenuItem(value: 'WiFi', child: Text('Wi-Fi')),
                   DropdownMenuItem(value: 'Pool', child: Text('Pool')),
@@ -186,7 +212,7 @@ class _SearchPageState extends State<SearchPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(isFrench ? 'Annuler' : 'Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -195,7 +221,7 @@ class _SearchPageState extends State<SearchPage> {
                 'amenity': amenity ?? '',
               });
             },
-            child: const Text('Apply'),
+            child: Text(isFrench ? 'Appliquer' : 'Apply'),
           ),
         ],
       ),
@@ -210,136 +236,214 @@ class _SearchPageState extends State<SearchPage> {
   // --------------------- UI ---------------------
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Search Hotels'),
-        actions: [
-          IconButton(
-            onPressed: _showFilterDialog,
-            icon: const Icon(Icons.filter_list),
-          ),
-          IconButton(onPressed: _showSortDialog, icon: const Icon(Icons.sort)),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Destination
-            TextField(
-              controller: _destinationController,
-              decoration: const InputDecoration(
-                labelText: 'Destination',
-                prefixIcon: Icon(Icons.location_on),
-                filled: true,
-                fillColor: AppTheme.lightBlue,
-              ),
-            ),
-            const SizedBox(height: 10),
+    return AnimatedBuilder(
+      animation: AccessibilityState.rebuild,
+      builder: (context, _) {
+        final highContrast = AccessibilityState.contrast.value >= 2;
+        final isFrench = AccessibilityState.language.value == 1;
 
-            // Date range
-            ListTile(
-              onTap: _selectDateRange,
-              tileColor: AppTheme.lightBlue,
-              leading: const Icon(Icons.calendar_today),
-              title: Text(
-                _selectedDates == null
-                    ? 'Select dates'
-                    : '${_selectedDates!.start.toLocal().toString().split(" ")[0]} - ${_selectedDates!.end.toLocal().toString().split(" ")[0]}',
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Budget
-            TextField(
-              controller: _budgetController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Max Budget (Rs)',
-                prefixIcon: Icon(Icons.attach_money),
-                filled: true,
-                fillColor: AppTheme.lightBlue,
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Hotel Type
-            DropdownButtonFormField<String>(
-              value: _selectedType,
-              decoration: const InputDecoration(
-                labelText: 'Hotel Type',
-                prefixIcon: Icon(Icons.hotel),
-                filled: true,
-                fillColor: AppTheme.lightBlue,
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Any', child: Text('Any')),
-                DropdownMenuItem(value: 'Resort', child: Text('Resort')),
-                DropdownMenuItem(value: 'Villa', child: Text('Villa')),
-                DropdownMenuItem(value: 'Business', child: Text('Business')),
-                DropdownMenuItem(
-                  value: 'Eco-Resort',
-                  child: Text('Eco-Resort'),
+        return Scaffold(
+          backgroundColor: highContrast ? Colors.black : Colors.white,
+          appBar: AppBar(
+            title: Text(isFrench ? 'Rechercher des hôtels' : 'Search Hotels'),
+            backgroundColor: highContrast ? Colors.black : AppTheme.primaryBlue,
+            foregroundColor: highContrast ? Colors.white : Colors.white,
+            actions: [
+              IconButton(
+                onPressed: _showFilterDialog,
+                icon: Icon(
+                  Icons.filter_list,
+                  color: highContrast ? Colors.white : Colors.white,
                 ),
-                DropdownMenuItem(value: 'Lodge', child: Text('Lodge')),
-                DropdownMenuItem(value: 'Boutique', child: Text('Boutique')),
-              ],
-              onChanged: (val) => setState(() => _selectedType = val!),
-            ),
-            const SizedBox(height: 20),
-
-            // Search Button
-            ElevatedButton(
-              onPressed: _fetchHotels,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text(
-                'Search',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              IconButton(
+                onPressed: _showSortDialog,
+                icon: Icon(
+                  Icons.sort,
+                  color: highContrast ? Colors.white : Colors.white,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-
-            // Results
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else if (_hotels.isEmpty)
-              const Text('No hotels found.')
-            else
-              Column(
-                children: _hotels.map((hotel) {
-                  return Card(
-                    elevation: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HotelDetailsPage(hotel: hotel),
-                        ),
-                      ),
-                      leading: Image.network(
-                        hotel.imageUrl,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(hotel.name),
-                      subtitle: Text(
-                        '${hotel.location}\nRs ${hotel.pricePerNight} / night • ${hotel.type}',
-                      ),
-                      isThreeLine: true,
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Destination
+                TextField(
+                  controller: _destinationController,
+                  style: TextStyle(
+                    color: highContrast ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: isFrench ? 'Destination' : 'Destination',
+                    prefixIcon: Icon(
+                      Icons.location_on,
+                      color: highContrast ? Colors.white : null,
                     ),
-                  );
-                }).toList(),
-              ),
-          ],
-        ),
-      ),
+                    filled: true,
+                    fillColor: highContrast
+                        ? Colors.grey[850]
+                        : AppTheme.lightBlue,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Date range
+                ListTile(
+                  onTap: _selectDateRange,
+                  tileColor: highContrast
+                      ? Colors.grey[850]
+                      : AppTheme.lightBlue,
+                  leading: Icon(
+                    Icons.calendar_today,
+                    color: highContrast ? Colors.white : null,
+                  ),
+                  title: Text(
+                    _selectedDates == null
+                        ? (isFrench ? 'Sélectionner les dates' : 'Select dates')
+                        : '${_selectedDates!.start.toLocal().toString().split(" ")[0]} - ${_selectedDates!.end.toLocal().toString().split(" ")[0]}',
+                    style: TextStyle(
+                      color: highContrast ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Budget
+                TextField(
+                  controller: _budgetController,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(
+                    color: highContrast ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: isFrench
+                        ? 'Budget maximum (Rs)'
+                        : 'Max Budget (Rs)',
+                    prefixIcon: Icon(
+                      Icons.attach_money,
+                      color: highContrast ? Colors.white : null,
+                    ),
+                    filled: true,
+                    fillColor: highContrast
+                        ? Colors.grey[850]
+                        : AppTheme.lightBlue,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Hotel Type
+                DropdownButtonFormField<String>(
+                  value: _selectedType,
+                  style: TextStyle(
+                    color: highContrast ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: isFrench ? 'Type d’hôtel' : 'Hotel Type',
+                    prefixIcon: Icon(
+                      Icons.hotel,
+                      color: highContrast ? Colors.white : null,
+                    ),
+                    filled: true,
+                    fillColor: highContrast
+                        ? Colors.grey[850]
+                        : AppTheme.lightBlue,
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Any', child: Text('Any')),
+                    DropdownMenuItem(value: 'Resort', child: Text('Resort')),
+                    DropdownMenuItem(value: 'Villa', child: Text('Villa')),
+                    DropdownMenuItem(
+                      value: 'Business',
+                      child: Text('Business'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Eco-Resort',
+                      child: Text('Eco-Resort'),
+                    ),
+                    DropdownMenuItem(value: 'Lodge', child: Text('Lodge')),
+                    DropdownMenuItem(
+                      value: 'Boutique',
+                      child: Text('Boutique'),
+                    ),
+                  ],
+                  onChanged: (val) => setState(() => _selectedType = val!),
+                ),
+                const SizedBox(height: 20),
+
+                // Search Button
+                ElevatedButton(
+                  onPressed: _fetchHotels,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: Text(
+                    isFrench ? 'Rechercher' : 'Search',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Results
+                if (_isLoading)
+                  const CircularProgressIndicator()
+                else if (_hotels.isEmpty)
+                  Text(
+                    isFrench ? 'Aucun hôtel trouvé.' : 'No hotels found.',
+                    style: TextStyle(
+                      color: highContrast ? Colors.white : Colors.black,
+                    ),
+                  )
+                else
+                  Column(
+                    children: _hotels.map((hotel) {
+                      return Card(
+                        color: highContrast ? Colors.white : null,
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HotelDetailsPage(hotel: hotel),
+                            ),
+                          ),
+                          leading: Image.network(
+                            hotel.imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                          title: Text(
+                            hotel.name,
+                            style: TextStyle(
+                              color: highContrast ? Colors.black : Colors.black,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${hotel.location}\nRs ${hotel.pricePerNight} / night • ${hotel.type}',
+                            style: TextStyle(
+                              color: highContrast
+                                  ? Colors.black87
+                                  : Colors.black54,
+                            ),
+                          ),
+                          isThreeLine: true,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

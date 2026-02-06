@@ -11,6 +11,10 @@ class AccessibilityFAB extends StatefulWidget {
 class _AccessibilityFABState extends State<AccessibilityFAB> {
   bool open = false;
 
+  String _t(String en, String fr) {
+    return AccessibilityState.language.value == 'fr' ? fr : en;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -38,17 +42,27 @@ class _AccessibilityFABState extends State<AccessibilityFAB> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _option('👁️', 'Contrast', () {
+                    _option('👁️', _t('Contrast', 'Contraste'), () {
                       AccessibilityState.cycle(AccessibilityState.contrast, 3);
                     }),
-                    _option('📝', 'Text Size', () {
+                    _option('📝', _t('Text Size', 'Taille du texte'), () {
                       AccessibilityState.cycle(AccessibilityState.textSize, 3);
                     }),
-                    _option('↔️', 'Spacing', () {
+                    _option('↔️', _t('Spacing', 'Espacement'), () {
                       AccessibilityState.cycle(AccessibilityState.spacing, 3);
                     }),
+                    _option(
+                      AccessibilityState.language.value == 'fr'
+                          ? '🇫🇷'
+                          : '🇬🇧',
+                      _t('English', 'Français'),
+                      () {
+                        AccessibilityState.toggleLanguage();
+                        setState(() {});
+                      },
+                    ),
                     const Divider(),
-                    _option('⟳', 'Reset', () {
+                    _option('⟳', _t('Reset', 'Réinitialiser'), () {
                       AccessibilityState.reset();
                       setState(() => open = false);
                     }),
