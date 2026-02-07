@@ -32,10 +32,12 @@ class RatingsReviewsSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: highContrast
-              ? Colors.black
-              : Colors.white, // high contrast background
+          color: highContrast ? Colors.black : Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: highContrast ? Colors.white : Colors.transparent,
+            width: highContrast ? 2 : 0,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +93,6 @@ class RatingsReviewsSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-
                   Text(
                     AccessibilityState.t(
                       '(${reviews.length} review${reviews.length == 1 ? '' : 's'})',

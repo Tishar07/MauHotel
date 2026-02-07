@@ -55,6 +55,20 @@ class CompareHotelsService {
      SIMILARITY LOGIC
   ======================== */
 
+  /// Normalize amenities so variants match
+  String _normalizeAmenity(String amenity) {
+    final a = amenity.toLowerCase();
+
+    if (a.contains('wifi')) return 'wifi';
+    if (a.contains('pool')) return 'pool';
+    if (a.contains('restaurant')) return 'restaurant';
+    if (a.contains('bar')) return 'bar';
+    if (a.contains('beach')) return 'beach';
+    if (a.contains('yoga')) return 'yoga';
+
+    return a;
+  }
+
   /// Find similar hotels based on amenities & price
   List<Hotel> getSimilarHotels(
     Hotel baseHotel,
@@ -63,8 +77,9 @@ class CompareHotelsService {
     double priceRange = 5000,
   }) {
     final baseAmenities = baseHotel.amenities
-        .map((e) => e.toLowerCase())
+        .map((e) => _normalizeAmenity(e))
         .toSet();
+
     final basePrice = baseHotel.pricePerNight;
 
     final List<_ScoredHotel> scoredHotels = [];
@@ -72,20 +87,20 @@ class CompareHotelsService {
     for (final hotel in hotels) {
       if (hotel.hotelId == baseHotel.hotelId) continue;
 
-      // Amenity similarity
+      // Amenity similarity (Jaccard)
       final hotelAmenities = hotel.amenities
-          .map((e) => e.toLowerCase())
+          .map((e) => _normalizeAmenity(e))
           .toSet();
-      final commonAmenities = baseAmenities.intersection(hotelAmenities).length;
 
-      final amenityScore = baseAmenities.isEmpty
-          ? 0
-          : commonAmenities / (baseAmenities.length + 1);
+      final intersection = baseAmenities.intersection(hotelAmenities).length;
+      final union = baseAmenities.union(hotelAmenities).length;
+
+      final amenityScore = union == 0 ? 0 : intersection / union;
 
       // Price similarity
       final priceDifference = (hotel.pricePerNight - basePrice).abs();
 
-      final priceScore = priceDifference > priceRange
+      final priceScore = priceDifference >= priceRange
           ? 0
           : 1 - (priceDifference / priceRange);
 

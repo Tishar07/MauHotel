@@ -52,7 +52,24 @@ class SearchBar extends StatelessWidget {
             fillColor: highContrast ? Colors.black : AppTheme.lightBlue,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(
+                color: highContrast ? Colors.white : Colors.transparent,
+                width: highContrast ? 2 : 0,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide(
+                color: highContrast ? Colors.white : Colors.transparent,
+                width: highContrast ? 2 : 0,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide(
+                color: highContrast ? Colors.white : AppTheme.primaryBlue,
+                width: highContrast ? 2 : 1.5,
+              ),
             ),
           ),
         );

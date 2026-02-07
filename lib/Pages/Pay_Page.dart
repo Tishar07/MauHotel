@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/hotel_model.dart';
+import '../accessibility/accessibility_state.dart';
 
 class PaymentPage extends StatelessWidget {
   final Hotel hotel;
@@ -19,74 +20,252 @@ class PaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Payment')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                 color: const Color.fromARGB(255, 137, 190, 244),
-                 borderRadius: BorderRadius.circular(8),
-                 border: Border.all(color: const Color.fromARGB(255, 143, 189, 233)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Price Details', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 30, 5, 247))),
-                  const SizedBox(height: 12),
-                  Text('Hotel: ${hotel.name}', style: const TextStyle(fontSize: 16)),
-                  Text('Duration: $nights Night${nights > 1 ? 's' : ''} × $rooms Room${rooms > 1 ? 's' : ''}', style: const TextStyle(fontSize: 16)),
-                  Text('Dates: 20 Oct – 15 Dec 2025', style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text('Total Cost: Rs ${totalPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ],
-              ),
+    return AnimatedBuilder(
+      animation: AccessibilityState.rebuild,
+      builder: (context, _) {
+        final highContrast = AccessibilityState.contrast.value >= 2;
+        final textColor = highContrast ? Colors.white : Colors.black;
+        final bgColor = highContrast ? Colors.black : Colors.white;
+        final inputBg = highContrast ? Colors.black : Colors.white;
+        final borderColor = highContrast ? Colors.white : Colors.grey;
+        final buttonBg = highContrast ? Colors.white : Colors.red;
+        final buttonText = highContrast ? Colors.black : Colors.white;
+
+        return Scaffold(
+          backgroundColor: bgColor,
+          appBar: AppBar(
+            title: Text(
+              AccessibilityState.t('Payment', 'Paiement'),
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
             ),
+            backgroundColor: bgColor,
+            iconTheme: IconThemeData(color: textColor),
+            elevation: 0,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              children: [
+                // Price Summary
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: highContrast
+                        ? Colors.black
+                        : const Color.fromARGB(255, 137, 190, 244),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: highContrast
+                          ? Colors.white
+                          : const Color.fromARGB(255, 143, 189, 233),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AccessibilityState.t(
+                          'Price Details',
+                          'Détails du prix',
+                        ),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: highContrast ? Colors.white : Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '${AccessibilityState.t('Hotel', 'Hôtel')}: ${hotel.name}',
+                        style: TextStyle(fontSize: 16, color: textColor),
+                      ),
+                      Text(
+                        '${AccessibilityState.t('Duration', 'Durée')}: $nights ${AccessibilityState.t('Night', 'Nuit')}${nights > 1 ? 's' : ''} × $rooms ${AccessibilityState.t('Room', 'Chambre')}${rooms > 1 ? 's' : ''}',
+                        style: TextStyle(fontSize: 16, color: textColor),
+                      ),
+                      Text(
+                        '${AccessibilityState.t('Bed Type', 'Type de lit')}: ${AccessibilityState.t(bedType, bedType)}',
+                        style: TextStyle(fontSize: 16, color: textColor),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${AccessibilityState.t('Total Cost', 'Coût total')}: Rs ${totalPrice.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: highContrast ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-            Text('Who\'s Checking In?', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 16, 28, 247))),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'First Name', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Last Name', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Email', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder()), keyboardType: TextInputType.emailAddress),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Phone Number', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder()), keyboardType: TextInputType.phone),
+                // Guest Info
+                Text(
+                  AccessibilityState.t(
+                    'Who\'s Checking In?',
+                    'Qui s\'enregistre?',
+                  ),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: highContrast ? Colors.white : Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t('First Name', 'Prénom'),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t('Last Name', 'Nom'),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t('Email', 'Email'),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t(
+                    'Phone Number',
+                    'Numéro de téléphone',
+                  ),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                  keyboardType: TextInputType.phone,
+                ),
 
-            const SizedBox(height: 24),
-            Text('Payment Details', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color:Color.fromARGB(255, 7, 39, 244))),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Name on Card', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Card Number', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder()), keyboardType: TextInputType.number),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Expiry Date (MM/YY)', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder()), keyboardType: TextInputType.datetime),
-            const SizedBox(height: 12),
-            TextField(decoration: InputDecoration(labelText: 'Security Code (CVV)', labelStyle: const TextStyle(fontSize: 16), border: const OutlineInputBorder()), obscureText: true, keyboardType: TextInputType.number),
+                const SizedBox(height: 24),
+                // Payment Info
+                Text(
+                  AccessibilityState.t(
+                    'Payment Details',
+                    'Détails du paiement',
+                  ),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: highContrast ? Colors.white : Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t(
+                    'Name on Card',
+                    'Nom sur la carte',
+                  ),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t('Card Number', 'Numéro de carte'),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t(
+                    'Expiry Date (MM/YY)',
+                    'Date d\'expiration (MM/AA)',
+                  ),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                  keyboardType: TextInputType.datetime,
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: AccessibilityState.t(
+                    'Security Code (CVV)',
+                    'Code de sécurité (CVV)',
+                  ),
+                  textColor: textColor,
+                  bgColor: inputBg,
+                  borderColor: borderColor,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                ),
 
-            const SizedBox(height: 24),
-            Text('Total: Rs ${totalPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
+                Text(
+                  '${AccessibilityState.t('Total', 'Total')}: Rs ${totalPrice.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: highContrast ? Colors.white : Colors.black,
+                  ),
+                ),
 
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Payment successful!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text('Pay Now'),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AccessibilityState.t(
+                            'Payment successful!',
+                            'Paiement effectué !',
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonBg,
+                    foregroundColor: buttonText,
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: Text(
+                    AccessibilityState.t('Pay Now', 'Payer maintenant'),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required Color textColor,
+    required Color bgColor,
+    required Color borderColor,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: TextStyle(color: textColor),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: textColor),
+        filled: true,
+        fillColor: bgColor,
+        border: OutlineInputBorder(borderSide: BorderSide(color: borderColor)),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: borderColor, width: 2),
         ),
       ),
     );

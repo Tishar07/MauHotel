@@ -25,7 +25,7 @@ class _AccessibilityFABState extends State<AccessibilityFAB> {
           child: FloatingActionButton(
             heroTag: 'a11y',
             onPressed: () => setState(() => open = !open),
-            child: const Text('♿️', style: TextStyle(fontSize: 22)),
+            child: const Text('🅰️', style: TextStyle(fontSize: 22)),
           ),
         ),
 

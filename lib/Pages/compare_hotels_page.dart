@@ -76,12 +76,14 @@ class _CompareHotelsPageState extends State<CompareHotelsPage> {
               AccessibilityState.t('Compare Similar', 'Comparer similaires'),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryBlue,
+                color: highContrast ? Colors.white : AppTheme.primaryBlue,
               ),
             ),
             centerTitle: true,
             backgroundColor: highContrast ? Colors.black : Colors.white,
-            iconTheme: IconThemeData(color: AppTheme.primaryBlue),
+            iconTheme: IconThemeData(
+              color: highContrast ? Colors.white : AppTheme.primaryBlue,
+            ),
           ),
           body: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -159,6 +161,10 @@ class _CompareHotelCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: highContrast ? Colors.black : AppTheme.lightBlue,
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: highContrast ? Colors.white : Colors.transparent,
+            width: highContrast ? 2 : 0,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,24 +220,34 @@ class _CompareHotelCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(),
-            const SizedBox(height: 10),
-            Text(
-              '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 255, 255, 255),
+
+            const Spacer(), // Push price to bottom
+            // ================= PRICE SECTION =================
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: highContrast ? Colors.white : AppTheme.primaryBlue,
+                    ),
+                  ),
+                  Text(
+                    AccessibilityState.t('per night', 'par nuit'),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: highContrast ? Colors.white : AppTheme.primaryBlue,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Text(
-              AccessibilityState.t('per night', 'par nuit'),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 255, 255, 255),
-              ),
-            ),
+
+            const SizedBox(height: 12), // spacing from bottom if needed
           ],
         ),
       ),
@@ -248,10 +264,38 @@ class _CompareHotelCard extends StatelessWidget {
       icon = Icons.beach_access;
     } else if (lower.contains('breakfast') || lower.contains('restaurant')) {
       icon = Icons.restaurant;
+    } else if (lower.contains('wifi')) {
+      icon = Icons.wifi;
+    } else if (lower.contains('spa')) {
+      icon = Icons.spa;
+    } else if (lower.contains('bar')) {
+      icon = Icons.wine_bar;
+    } else if (lower.contains('gym')) {
+      icon = Icons.fitness_center;
+    } else if (lower.contains('tennis')) {
+      icon = Icons.sports_tennis;
+    } else if (lower.contains('yoga')) {
+      icon = Icons.self_improvement;
+    } else if (lower.contains('snorkeling')) {
+      icon = Icons.scuba_diving;
+    } else if (lower.contains('hiking')) {
+      icon = Icons.hiking;
+    } else if (lower.contains('nature')) {
+      icon = Icons.forest;
+    } else if (lower.contains('eco')) {
+      icon = Icons.eco;
+    } else if (lower.contains('boat')) {
+      icon = Icons.directions_boat;
+    } else if (lower.contains('all-inclusive')) {
+      icon = Icons.all_inclusive;
+    } else if (lower.contains('butler')) {
+      icon = Icons.person;
+    } else {
+      icon = Icons.check_circle_outline;
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 25),
       child: Row(
         children: [
           Icon(
@@ -262,7 +306,7 @@ class _CompareHotelCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              amenity,
+              AccessibilityState.translateAmenity(amenity),
               style: TextStyle(
                 fontSize: 13,
                 color: highContrast ? Colors.white : Colors.black,

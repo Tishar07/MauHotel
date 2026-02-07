@@ -245,9 +245,15 @@ class _SearchPageState extends State<SearchPage> {
         return Scaffold(
           backgroundColor: highContrast ? Colors.black : Colors.white,
           appBar: AppBar(
-            title: Text(isFrench ? 'Rechercher des hôtels' : 'Search Hotels'),
-            backgroundColor: highContrast ? Colors.black : AppTheme.primaryBlue,
-            foregroundColor: highContrast ? Colors.white : Colors.white,
+            title: Text(
+              isFrench ? 'Rechercher des hôtels' : 'Search Hotels',
+              style: TextStyle(
+                fontSize: 22, // <-- set font size
+                fontWeight: FontWeight.bold, // <-- make bold
+              ),
+            ),
+            backgroundColor: highContrast ? Colors.black : Colors.white,
+            foregroundColor: highContrast ? Colors.white : Colors.black,
             actions: [
               IconButton(
                 onPressed: _showFilterDialog,
@@ -265,6 +271,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ],
           ),
+
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -273,38 +280,90 @@ class _SearchPageState extends State<SearchPage> {
                 TextField(
                   controller: _destinationController,
                   style: TextStyle(
-                    color: highContrast ? Colors.white : Colors.black,
+                    color: highContrast
+                        ? Colors.white
+                        : const Color.fromARGB(255, 14, 14, 14),
                   ),
                   decoration: InputDecoration(
                     labelText: isFrench ? 'Destination' : 'Destination',
                     prefixIcon: Icon(
                       Icons.location_on,
-                      color: highContrast ? Colors.white : null,
+                      color: highContrast ? Colors.red : null,
                     ),
                     filled: true,
-                    fillColor: highContrast
-                        ? Colors.grey[850]
-                        : AppTheme.lightBlue,
+                    fillColor: highContrast ? Colors.black : AppTheme.lightBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.blue,
+                        width: 2,
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: highContrast ? Colors.white : Colors.black,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
 
                 // Date range
-                ListTile(
+                InkWell(
                   onTap: _selectDateRange,
-                  tileColor: highContrast
-                      ? Colors.grey[850]
-                      : AppTheme.lightBlue,
-                  leading: Icon(
-                    Icons.calendar_today,
-                    color: highContrast ? Colors.white : null,
-                  ),
-                  title: Text(
-                    _selectedDates == null
-                        ? (isFrench ? 'Sélectionner les dates' : 'Select dates')
-                        : '${_selectedDates!.start.toLocal().toString().split(" ")[0]} - ${_selectedDates!.end.toLocal().toString().split(" ")[0]}',
-                    style: TextStyle(
-                      color: highContrast ? Colors.white : Colors.black,
+                  borderRadius: BorderRadius.circular(
+                    25,
+                  ), // Ripple matches rounded corners
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: highContrast ? Colors.black : AppTheme.lightBlue,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          color: highContrast ? Colors.white : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _selectedDates == null
+                                ? (isFrench
+                                      ? 'Sélectionner les dates'
+                                      : 'Select dates')
+                                : '${_selectedDates!.start.toLocal().toString().split(" ")[0]} - ${_selectedDates!.end.toLocal().toString().split(" ")[0]}',
+                            style: TextStyle(
+                              color: highContrast ? Colors.white : Colors.black,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -316,6 +375,8 @@ class _SearchPageState extends State<SearchPage> {
                   keyboardType: TextInputType.number,
                   style: TextStyle(
                     color: highContrast ? Colors.white : Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
                     labelText: isFrench
@@ -326,9 +387,36 @@ class _SearchPageState extends State<SearchPage> {
                       color: highContrast ? Colors.white : null,
                     ),
                     filled: true,
-                    fillColor: highContrast
-                        ? Colors.grey[850]
-                        : AppTheme.lightBlue,
+                    fillColor: highContrast ? Colors.black : AppTheme.lightBlue,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.blue,
+                        width: 2,
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: highContrast ? Colors.white : Colors.black,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -338,6 +426,8 @@ class _SearchPageState extends State<SearchPage> {
                   value: _selectedType,
                   style: TextStyle(
                     color: highContrast ? Colors.white : Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
                     labelText: isFrench ? 'Type d’hôtel' : 'Hotel Type',
@@ -346,9 +436,36 @@ class _SearchPageState extends State<SearchPage> {
                       color: highContrast ? Colors.white : null,
                     ),
                     filled: true,
-                    fillColor: highContrast
-                        ? Colors.grey[850]
-                        : AppTheme.lightBlue,
+                    fillColor: highContrast ? Colors.black : AppTheme.lightBlue,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.transparent,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(
+                        color: highContrast ? Colors.white : Colors.blue,
+                        width: 2,
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: highContrast ? Colors.white : Colors.black,
+                      fontSize: 16,
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'Any', child: Text('Any')),

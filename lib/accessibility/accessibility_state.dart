@@ -143,6 +143,43 @@ class AccessibilityState {
     return map[text] ?? text;
   }
 
+  //animities in french
+  static String translateAmenity(String amenity) {
+    if (language.value == 'en') return amenity;
+
+    final map = {
+      'wifi': 'Wi-Fi',
+      'free wifi': 'Wi-Fi gratuit',
+      'pool': 'Piscine',
+      'infinity pool': 'Piscine à débordement',
+      'private pool': 'Piscine privée',
+      'spa': 'Spa',
+      'restaurant': 'Restaurant',
+      'organic restaurant': 'Restaurant bio',
+      'gym': 'Salle de sport',
+      'golf course': 'Parcours de golf',
+      'snorkeling': 'Plongée en apnée',
+      'kids club': 'Club enfants',
+      'bar': 'Bar',
+      'rooftop bar': 'Bar sur le toit',
+      'tennis courts': 'Terrains de tennis',
+      'private beach': 'Plage privée',
+      'beach access': 'Accès à la plage',
+      'room service': 'Service en chambre',
+      'hiking trails': 'Sentiers de randonnée',
+      'nature view': 'Vue sur la nature',
+      'eco tours': 'Excursions écologiques',
+      'boat excursions': 'Excursions en bateau',
+      'water sports': 'Sports nautiques',
+      'all-inclusive': 'Tout compris',
+      'butler service': 'Service de majordome',
+      'yoga classes': 'Cours de yoga',
+      'yoga pavilion': 'Pavillon de yoga',
+    };
+
+    return map[amenity.toLowerCase()] ?? amenity;
+  }
+
   // =========================
   // 🔹 GLOBAL REBUILD TRIGGER
   // =========================

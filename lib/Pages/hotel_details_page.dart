@@ -82,8 +82,6 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
         return Icons.scuba_diving;
       case 'kids club':
         return Icons.child_care;
-      case 'gym':
-        return Icons.sports_gymnastics_rounded;
       case 'bar':
         return Icons.wine_bar;
       case 'tennis courts':
@@ -96,18 +94,42 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
         return Icons.hiking;
       case 'nature view':
         return Icons.forest;
-      case 'golf course':
-        return Icons.golf_course;
-      case 'snorkeling':
-        return Icons.scuba_diving;
       case 'eco tours':
         return Icons.eco;
       case 'boat excursions':
         return Icons.directions_boat;
       case 'water sports':
         return Icons.surfing;
-      case 'kids club':
-        return Icons.child_care;
+      case 'all-inclusive':
+        return Icons.all_inclusive;
+
+      case 'beach access':
+        return Icons.beach_access;
+
+      case 'butler service':
+        return Icons.person;
+
+      case 'free wifi':
+        return Icons.wifi;
+
+      case 'infinity pool':
+        return Icons.pool;
+
+      case 'organic restaurant':
+        return Icons.restaurant;
+
+      case 'private pool':
+        return Icons.pool;
+
+      case 'rooftop bar':
+        return Icons.wine_bar;
+
+      case 'yoga classes':
+        return Icons.self_improvement;
+
+      case 'yoga pavilion':
+        return Icons.self_improvement;
+
       default:
         return Icons.check_circle_outline;
     }
@@ -247,90 +269,67 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
                   ),
                 ),
 
-                // ================= PRICE & BOOK =================
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AccessibilityState.t(
-                          'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / night',
-                          'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / nuit',
-                        ),
-                        style: TextStyle(
-                          color: highContrast
-                              ? Colors.white
-                              : AppTheme.primaryBlue,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      Text(
-                        AccessibilityState.t(
-                          'Total includes taxes & fees',
-                          'Total inclut taxes et frais',
-                        ),
-                        style: const TextStyle(color: Colors.red),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      PrimaryButton(
-                        label: AccessibilityState.t('Book Now', 'Réserver'),
-                        icon: Icons.book_online,
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BookingPage(hotel: hotel),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // ================= AMENITIES =================
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Wrap(
-                    spacing: 32,
-                    runSpacing: 24,
-                    children: hotel.amenities.map((amenity) {
-                      return Column(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(
-                            getAmenityIcon(amenity),
-                            size: 28,
-                            color: highContrast
-                                ? Colors.white
-                                : Colors.black, // <-- Add this line
-                          ),
-                          const SizedBox(height: 6),
-
-                          SizedBox(
-                            width: 80,
-                            child: Text(
-                              amenity,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: highContrast
-                                    ? Colors.white
-                                    : Colors.black,
+                          // ----- PRICE -----
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AccessibilityState.t(
+                                  'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / night',
+                                  'Rs ${hotel.pricePerNight.toStringAsFixed(2)} / nuit',
+                                ),
+                                style: TextStyle(
+                                  color: highContrast
+                                      ? Colors.white
+                                      : AppTheme.primaryBlue,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              const SizedBox(height: 4),
+                              Text(
+                                AccessibilityState.t(
+                                  'Total includes taxes & fees',
+                                  'Total inclut taxes et frais',
+                                ),
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+
+                          // ----- Push button to the right -----
+                          const Spacer(),
+
+                          // ----- BOOK BUTTON -----
+                          SizedBox(
+                            height: 50, // make button taller
+                            child: PrimaryButton(
+                              label: AccessibilityState.t(
+                                'Book Now',
+                                'Réserver',
+                              ),
+                              icon: Icons.book_online,
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BookingPage(hotel: hotel),
+                                ),
+                              ),
                             ),
                           ),
                         ],
-                      );
-                    }).toList(),
+                      ),
+
+                      const SizedBox(height: 24), // spacing after section
+                    ],
                   ),
                 ),
 
@@ -371,20 +370,62 @@ class _HotelDetailsPageState extends State<HotelDetailsPage> {
 
                 const SizedBox(height: 24),
 
+                // ================= AMENITIES =================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 32,
+                    runSpacing: 24,
+                    children: hotel.amenities.map((amenity) {
+                      return Column(
+                        children: [
+                          Icon(
+                            getAmenityIcon(amenity),
+                            size: 28,
+                            color: highContrast
+                                ? Colors.white
+                                : Colors.black, // <-- Add this line
+                          ),
+                          const SizedBox(height: 6),
+
+                          SizedBox(
+                            width: 80,
+                            child: Text(
+                              AccessibilityState.translateAmenity(amenity),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: highContrast
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+
                 // ================= REVIEWS =================
                 Container(
                   color: highContrast
                       ? Colors.black
-                      : Colors.white, // <-- Set background
+                      : Colors.white, // background
                   padding: const EdgeInsets.symmetric(
                     vertical: 16,
-                    horizontal: 16,
+                    horizontal: 16, // aligns with other sections
                   ),
-                  child: RatingsReviewsSection(
-                    isLoading: isLoadingReviews,
-                    reviews: reviews,
-                    showReviews: true,
-                    showTitle: true,
+                  child: Align(
+                    alignment: Alignment.topLeft, // ✅ align content to the left
+                    child: RatingsReviewsSection(
+                      isLoading: isLoadingReviews,
+                      reviews: reviews,
+                      showReviews: true,
+                      showTitle: true,
+                    ),
                   ),
                 ),
 

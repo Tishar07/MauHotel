@@ -347,6 +347,13 @@ class _HotelCard extends StatelessWidget {
 
         return Card(
           color: highContrast ? Colors.black : AppTheme.lightBlue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: highContrast ? Colors.white : Colors.transparent,
+              width: highContrast ? 2 : 0,
+            ),
+          ),
           margin: EdgeInsets.only(bottom: AccessibilityState.gap(20)),
           child: Padding(
             padding: AccessibilityState.padding(12),
@@ -377,10 +384,14 @@ class _HotelCard extends StatelessWidget {
                         children: [
                           Text(
                             hotel.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: highContrast ? Colors.white : Colors.black,
+                              color: highContrast
+                                  ? Colors.white
+                                  : Colors.black87,
                             ),
                           ),
                           SizedBox(height: AccessibilityState.gap(4)),
@@ -405,20 +416,20 @@ class _HotelCard extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   color: highContrast
                                       ? Colors.white
-                                      : Colors.black,
+                                      : Colors.black87,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 AccessibilityState.t(
-                                  '(${reviews.length} reviews)',
+                                  '(${reviews.length} review${reviews.length == 1 ? '' : 's'})',
                                   '(${reviews.length} avis)',
                                 ),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: highContrast
                                       ? Colors.white70
-                                      : Colors.grey,
+                                      : Colors.grey.shade700,
                                 ),
                               ),
                             ],
@@ -430,17 +441,15 @@ class _HotelCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 14, // Slightly larger for readability
-                              height: 1.4, // Better line spacing
+                              fontSize: 14,
+                              height: 1.4,
                               color: highContrast
                                   ? Colors.white
                                   : Colors.black87,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
-
                           SizedBox(height: AccessibilityState.gap(8)),
-
                           Text(
                             AccessibilityState.t(
                               '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)} per night',
