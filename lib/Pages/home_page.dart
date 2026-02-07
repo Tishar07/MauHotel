@@ -424,17 +424,23 @@ class _HotelCard extends StatelessWidget {
                             ],
                           ),
                           Text(
-                            hotel.description,
+                            AccessibilityState.translateDescription(
+                              hotel.description,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 14, // Slightly larger for readability
+                              height: 1.4, // Better line spacing
                               color: highContrast
                                   ? Colors.white
                                   : Colors.black87,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
+
                           SizedBox(height: AccessibilityState.gap(8)),
+
                           Text(
                             AccessibilityState.t(
                               '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)} per night',

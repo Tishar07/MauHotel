@@ -91,10 +91,16 @@ class RatingsReviewsSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
+
                   Text(
-                    '(${reviews.length} reviews)',
+                    AccessibilityState.t(
+                      '(${reviews.length} review${reviews.length == 1 ? '' : 's'})',
+                      '(${reviews.length} avis)',
+                    ),
                     style: TextStyle(
-                      color: highContrast ? Colors.white70 : Colors.grey,
+                      fontSize: 13,
+                      color: highContrast ? Colors.white : Colors.grey.shade700,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
